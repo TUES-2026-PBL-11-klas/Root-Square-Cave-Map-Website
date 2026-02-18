@@ -2,3 +2,5 @@
 - Map with pinpoints
 - Connect with login system
 - Deployment
+- Pipeline with Github Actions
+- Cluster for Database (Docker Compose, Helmchart, Kubernetes)
