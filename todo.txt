@@ -1,0 +1,4 @@
+- Frontend (based on picture)
+- Map with pinpoints
+- Connect with login system
+- Deployment
