@@ -148,7 +148,7 @@ body{
 }
 
 /* Legend panel */
-.legend-panel{
+.filter-panel{
   position:absolute;
   right:14px;
   bottom:70px;
@@ -162,15 +162,15 @@ body{
   z-index: 4;
 }
 
-.legend-panel.show{
+.filter-panel.show{
   display:block;
 }
 
-.legend-panel h4{
+.filter-panel h4{
   margin-top:0;
 }
 
-.legend-panel label{
+.filter-panel label{
   display:block;
   margin:6px 0;
 }

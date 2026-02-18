@@ -17,16 +17,15 @@ document.getElementById("zoomOut").addEventListener("click", () => {
 
 
 // --------------------
-// Bottom-right layers panel toggle
+// Bottom-right filters panel toggle
 // --------------------
-const filterBtn = document.getElementById("filterBtn");
-const legendPanel = document.getElementById("legendPanel");
+const filterToggleBtn = document.getElementById("filterToggleBtn");
+const filterPanel = document.getElementById("filterPanel");
 
-filterBtn.addEventListener("click", (e) => {
+filterToggleBtn.addEventListener("click", (e) => {
   e.stopPropagation();
-  legendPanel.classList.toggle("show");
+  filterPanel.classList.toggle("show");
 });
-
 
 // --------------------
 // Search (mock behavior)
@@ -150,12 +149,9 @@ requestForm.addEventListener("submit", (e) => {
 // --------------------
 // Placeholder buttons
 // --------------------
-document.getElementById("loginBtn").addEventListener("click", () => {
-  alert("Login clicked (wire to your auth flow).");
-});
 
-document.getElementById("registerBtn").addEventListener("click", () => {
-  alert("Register clicked (wire to your register flow).");
+document.getElementById("authBtn").addEventListener("click", () => {
+  alert("Login / Register clicked (wire to your auth flow).");
 });
 
 
@@ -166,14 +162,14 @@ document.addEventListener("click", (e) => {
   const clickedInsideFilterMenu = filterMenu.contains(e.target) || layersBtn.contains(e.target);
   if (!clickedInsideFilterMenu) closeFilterMenu();
 
-  const clickedInsideLegend = legendPanel.contains(e.target) || filterBtn.contains(e.target);
-  if (!clickedInsideLegend) legendPanel.classList.remove("show");
+  const clickedInsideFilter = filterPanel.contains(e.target) || filterToggleBtn.contains(e.target);
+  if (!clickedInsideFilter) filterPanel.classList.remove("show");
 });
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeFilterMenu();
-    legendPanel.classList.remove("show");
+    filterPanel.classList.remove("show");
     closeRequestModal();
   }
 });
