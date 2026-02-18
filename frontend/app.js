@@ -114,7 +114,17 @@ requestModal.addEventListener("click", (e) => {
   }
 });
 
-// Submit handler (mock)
+const toast = document.getElementById("toast");
+
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
 requestForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
@@ -127,16 +137,15 @@ requestForm.addEventListener("submit", (e) => {
     return;
   }
 
-  // Mock success
-  requestStatus.textContent = "Sent! (hook this to your backend)";
+  // success behavior
+  requestStatus.textContent = "";
   reqName.value = "";
   reqEmail.value = "";
   reqText.value = "";
 
-  // optional auto-close after a moment (comment out if you don’t want this)
-  setTimeout(() => closeRequestModal(), 700);
+  // show green confirmation bar
+  showToast("Request sent successfully!");
 });
-
 
 // --------------------
 // Placeholder buttons
