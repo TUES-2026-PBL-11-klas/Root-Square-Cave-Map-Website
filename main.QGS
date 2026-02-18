@@ -1,0 +1,1233 @@
+<!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
+<qgis saveUserFull="Виктор Алексиев" saveUser="alexi" projectname="" saveDateTime="2026-02-18T14:54:21" version="3.40.15-Bratislava">
+  <homePath path=""/>
+  <title></title>
+  <transaction mode="Disabled"/>
+  <projectFlags set=""/>
+  <projectCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <wkt>GEOGCRS["WGS 84 (CRS84)",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic longitude (Lon)",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic latitude (Lat)",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Not known."],AREA["World."],BBOX[-90,-180,90,180]],ID["OGC","CRS84"]]</wkt>
+      <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+      <srsid>63159</srsid>
+      <srid>520003159</srid>
+      <authid>OGC:CRS84</authid>
+      <description>WGS 84 (CRS84)</description>
+      <projectionacronym>longlat</projectionacronym>
+      <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+      <geographicflag>true</geographicflag>
+    </spatialrefsys>
+  </projectCrs>
+  <verticalCrs>
+    <spatialrefsys nativeFormat="Wkt">
+      <wkt></wkt>
+      <proj4></proj4>
+      <srsid>0</srsid>
+      <srid>0</srid>
+      <authid></authid>
+      <description></description>
+      <projectionacronym></projectionacronym>
+      <ellipsoidacronym></ellipsoidacronym>
+      <geographicflag>false</geographicflag>
+    </spatialrefsys>
+  </verticalCrs>
+  <elevation-shading-renderer edl-strength="1000" is-active="0" edl-distance-unit="0" edl-distance="0.5" light-altitude="45" combined-method="0" edl-is-active="1" hillshading-is-active="0" hillshading-is-multidirectional="0" hillshading-z-factor="1" light-azimuth="315"/>
+  <layer-tree-group>
+    <customproperties>
+      <Option/>
+    </customproperties>
+    <layer-tree-layer name="SPELEO — GIS_SPELEO" source="./SPELEO.mdb|layername=GIS_SPELEO" expanded="1" checked="Qt::Checked" patch_size="-1,-1" id="GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344" legend_exp="" providerKey="ogr" legend_split_behavior="0">
+      <customproperties>
+        <Option/>
+      </customproperties>
+    </layer-tree-layer>
+    <custom-order enabled="0">
+      <item>GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344</item>
+    </custom-order>
+  </layer-tree-group>
+  <snapping-settings type="1" maxScale="0" self-snapping="0" minScale="0" unit="1" enabled="0" mode="2" tolerance="12" intersection-snapping="0" scaleDependencyMode="0">
+    <individual-layer-settings>
+      <layer-setting type="1" maxScale="0" id="GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344" minScale="0" enabled="0" tolerance="12" units="1"/>
+    </individual-layer-settings>
+  </snapping-settings>
+  <relations/>
+  <polymorphicRelations/>
+  <mapcanvas name="theMapCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>22.24971719805463621</xmin>
+      <ymin>40.72172169231270544</ymin>
+      <xmax>28.56836591947698523</xmax>
+      <ymax>44.18772931145962701</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys nativeFormat="Wkt">
+        <wkt>GEOGCRS["WGS 84 (CRS84)",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic longitude (Lon)",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic latitude (Lat)",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Not known."],AREA["World."],BBOX[-90,-180,90,180]],ID["OGC","CRS84"]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>63159</srsid>
+        <srid>520003159</srid>
+        <authid>OGC:CRS84</authid>
+        <description>WGS 84 (CRS84)</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
+  </mapcanvas>
+  <projectModels/>
+  <legend updateDrawingOrder="true">
+    <legendlayer open="true" name="SPELEO — GIS_SPELEO" checked="Qt::Checked" drawingOrder="-1" showFeatureCount="0">
+      <filegroup open="true" hidden="false">
+        <legendlayerfile visible="1" isInOverview="0" layerid="GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344"/>
+      </filegroup>
+    </legendlayer>
+  </legend>
+  <mapViewDocks/>
+  <mapcanvas name="mAreaCanvas" annotationsVisible="1">
+    <units>degrees</units>
+    <extent>
+      <xmin>179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368</xmin>
+      <ymin>179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368</ymin>
+      <xmax>-179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368</xmax>
+      <ymax>-179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368</ymax>
+    </extent>
+    <rotation>0</rotation>
+    <destinationsrs>
+      <spatialrefsys nativeFormat="Wkt">
+        <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </destinationsrs>
+    <rendermaptile>0</rendermaptile>
+    <expressionContextScope/>
+  </mapcanvas>
+  <main-annotation-layer legendPlaceholderImage="" type="annotation" maxScale="0" autoRefreshTime="0" styleCategories="AllStyleCategories" minScale="1e+08" autoRefreshMode="Disabled" hasScaleBasedVisibilityFlag="0" refreshOnNotifyEnabled="0" refreshOnNotifyMessage="">
+    <id>Annotations_d03557e9_7939_4b42_86ce_4d73ed141a31</id>
+    <datasource></datasource>
+    <keywordList>
+      <value></value>
+    </keywordList>
+    <layername>Annotations</layername>
+    <srs>
+      <spatialrefsys nativeFormat="Wkt">
+        <wkt>GEOGCRS["WGS 84 (CRS84)",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic longitude (Lon)",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic latitude (Lat)",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Not known."],AREA["World."],BBOX[-90,-180,90,180]],ID["OGC","CRS84"]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>63159</srsid>
+        <srid>520003159</srid>
+        <authid>OGC:CRS84</authid>
+        <description>WGS 84 (CRS84)</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </srs>
+    <resourceMetadata>
+      <identifier></identifier>
+      <parentidentifier></parentidentifier>
+      <language></language>
+      <type></type>
+      <title></title>
+      <abstract></abstract>
+      <links/>
+      <dates/>
+      <fees></fees>
+      <encoding></encoding>
+      <crs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt></wkt>
+          <proj4></proj4>
+          <srsid>0</srsid>
+          <srid>0</srid>
+          <authid></authid>
+          <description></description>
+          <projectionacronym></projectionacronym>
+          <ellipsoidacronym></ellipsoidacronym>
+          <geographicflag>false</geographicflag>
+        </spatialrefsys>
+      </crs>
+      <extent/>
+    </resourceMetadata>
+    <items/>
+    <flags>
+      <Identifiable>1</Identifiable>
+      <Removable>1</Removable>
+      <Searchable>1</Searchable>
+      <Private>0</Private>
+    </flags>
+    <customproperties>
+      <Option/>
+    </customproperties>
+    <layerOpacity>1</layerOpacity>
+    <blendMode>0</blendMode>
+    <paintEffect/>
+  </main-annotation-layer>
+  <projectlayers>
+    <maplayer simplifyDrawingHints="1" minScale="100000000" geometry="Point" maxScale="0" wkbType="Point" simplifyMaxScale="1" hasScaleBasedVisibilityFlag="0" refreshOnNotifyMessage="" autoRefreshMode="Disabled" symbologyReferenceScale="-1" simplifyAlgorithm="0" readOnly="0" simplifyLocal="1" type="vector" labelsEnabled="0" simplifyDrawingTol="1" autoRefreshTime="0" styleCategories="AllStyleCategories" refreshOnNotifyEnabled="0" legendPlaceholderImage="">
+      <extent>
+        <xmin>22.58027677970950009</xmin>
+        <ymin>41.3786316245750001</ymin>
+        <xmax>28.59803746677840053</xmax>
+        <ymax>43.93973039044499984</ymax>
+      </extent>
+      <wgs84extent>
+        <xmin>22.58027677970950009</xmin>
+        <ymin>41.3786316245750001</ymin>
+        <xmax>28.59803746677840053</xmax>
+        <ymax>43.93973039044499984</ymax>
+      </wgs84extent>
+      <id>GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344</id>
+      <datasource>./SPELEO.mdb|layername=GIS_SPELEO</datasource>
+      <keywordList>
+        <value></value>
+      </keywordList>
+      <layername>SPELEO — GIS_SPELEO</layername>
+      <srs>
+        <spatialrefsys nativeFormat="Wkt">
+          <wkt>GEOGCRS["WGS 84 (CRS84)",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic longitude (Lon)",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic latitude (Lat)",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Not known."],AREA["World."],BBOX[-90,-180,90,180]],ID["OGC","CRS84"]]</wkt>
+          <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+          <srsid>63159</srsid>
+          <srid>520003159</srid>
+          <authid>OGC:CRS84</authid>
+          <description>WGS 84 (CRS84)</description>
+          <projectionacronym>longlat</projectionacronym>
+          <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+          <geographicflag>true</geographicflag>
+        </spatialrefsys>
+      </srs>
+      <resourceMetadata>
+        <identifier></identifier>
+        <parentidentifier></parentidentifier>
+        <language></language>
+        <type>dataset</type>
+        <title></title>
+        <abstract></abstract>
+        <links/>
+        <dates/>
+        <fees></fees>
+        <encoding></encoding>
+        <crs>
+          <spatialrefsys nativeFormat="Wkt">
+            <wkt></wkt>
+            <proj4></proj4>
+            <srsid>0</srsid>
+            <srid>0</srid>
+            <authid></authid>
+            <description></description>
+            <projectionacronym></projectionacronym>
+            <ellipsoidacronym></ellipsoidacronym>
+            <geographicflag>false</geographicflag>
+          </spatialrefsys>
+        </crs>
+        <extent/>
+      </resourceMetadata>
+      <provider encoding="UTF-8">ogr</provider>
+      <vectorjoins/>
+      <layerDependencies/>
+      <dataDependencies/>
+      <expressionfields/>
+      <map-layer-style-manager current="default">
+        <map-layer-style name="default"/>
+      </map-layer-style-manager>
+      <auxiliaryLayer/>
+      <metadataUrls/>
+      <flags>
+        <Identifiable>1</Identifiable>
+        <Removable>1</Removable>
+        <Searchable>1</Searchable>
+        <Private>0</Private>
+      </flags>
+      <temporal accumulate="0" startField="" endExpression="" endField="" startExpression="" enabled="0" durationUnit="min" mode="0" limitMode="0" durationField="" fixedDuration="0">
+        <fixedRange>
+          <start></start>
+          <end></end>
+        </fixedRange>
+      </temporal>
+      <elevation type="IndividualFeatures" symbology="Line" extrusionEnabled="0" extrusion="0" zoffset="0" clamping="Terrain" binding="Centroid" respectLayerSymbol="1" zscale="1" showMarkerSymbolInSurfacePlots="0">
+        <data-defined-properties>
+          <Option type="Map">
+            <Option type="QString" name="name" value=""/>
+            <Option name="properties"/>
+            <Option type="QString" name="type" value="collection"/>
+          </Option>
+        </data-defined-properties>
+        <profileLineSymbol>
+          <symbol type="line" name="" clip_to_extent="1" is_animated="0" alpha="1" frame_rate="10" force_rhr="0">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option type="QString" name="name" value=""/>
+                <Option name="properties"/>
+                <Option type="QString" name="type" value="collection"/>
+              </Option>
+            </data_defined_properties>
+            <layer pass="0" id="{1d7e7ffe-99fb-4695-bb26-9576a777fc35}" locked="0" enabled="1" class="SimpleLine">
+              <Option type="Map">
+                <Option type="QString" name="align_dash_pattern" value="0"/>
+                <Option type="QString" name="capstyle" value="square"/>
+                <Option type="QString" name="customdash" value="5;2"/>
+                <Option type="QString" name="customdash_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="customdash_unit" value="MM"/>
+                <Option type="QString" name="dash_pattern_offset" value="0"/>
+                <Option type="QString" name="dash_pattern_offset_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="dash_pattern_offset_unit" value="MM"/>
+                <Option type="QString" name="draw_inside_polygon" value="0"/>
+                <Option type="QString" name="joinstyle" value="bevel"/>
+                <Option type="QString" name="line_color" value="164,113,88,255,rgb:0.64313725490196083,0.44313725490196076,0.34509803921568627,1"/>
+                <Option type="QString" name="line_style" value="solid"/>
+                <Option type="QString" name="line_width" value="0.6"/>
+                <Option type="QString" name="line_width_unit" value="MM"/>
+                <Option type="QString" name="offset" value="0"/>
+                <Option type="QString" name="offset_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="offset_unit" value="MM"/>
+                <Option type="QString" name="ring_filter" value="0"/>
+                <Option type="QString" name="trim_distance_end" value="0"/>
+                <Option type="QString" name="trim_distance_end_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="trim_distance_end_unit" value="MM"/>
+                <Option type="QString" name="trim_distance_start" value="0"/>
+                <Option type="QString" name="trim_distance_start_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="trim_distance_start_unit" value="MM"/>
+                <Option type="QString" name="tweak_dash_pattern_on_corners" value="0"/>
+                <Option type="QString" name="use_custom_dash" value="0"/>
+                <Option type="QString" name="width_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" name="name" value=""/>
+                  <Option name="properties"/>
+                  <Option type="QString" name="type" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </profileLineSymbol>
+        <profileFillSymbol>
+          <symbol type="fill" name="" clip_to_extent="1" is_animated="0" alpha="1" frame_rate="10" force_rhr="0">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option type="QString" name="name" value=""/>
+                <Option name="properties"/>
+                <Option type="QString" name="type" value="collection"/>
+              </Option>
+            </data_defined_properties>
+            <layer pass="0" id="{85ab6c42-fc96-4a7d-a670-30dd92a33e57}" locked="0" enabled="1" class="SimpleFill">
+              <Option type="Map">
+                <Option type="QString" name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="color" value="164,113,88,255,rgb:0.64313725490196083,0.44313725490196076,0.34509803921568627,1"/>
+                <Option type="QString" name="joinstyle" value="bevel"/>
+                <Option type="QString" name="offset" value="0,0"/>
+                <Option type="QString" name="offset_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="offset_unit" value="MM"/>
+                <Option type="QString" name="outline_color" value="117,81,63,255,rgb:0.45937285420004575,0.31653315022507056,0.24649423971923401,1"/>
+                <Option type="QString" name="outline_style" value="solid"/>
+                <Option type="QString" name="outline_width" value="0.2"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="style" value="solid"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" name="name" value=""/>
+                  <Option name="properties"/>
+                  <Option type="QString" name="type" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </profileFillSymbol>
+        <profileMarkerSymbol>
+          <symbol type="marker" name="" clip_to_extent="1" is_animated="0" alpha="1" frame_rate="10" force_rhr="0">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option type="QString" name="name" value=""/>
+                <Option name="properties"/>
+                <Option type="QString" name="type" value="collection"/>
+              </Option>
+            </data_defined_properties>
+            <layer pass="0" id="{00e047b7-9889-4171-bdd3-05143809d904}" locked="0" enabled="1" class="SimpleMarker">
+              <Option type="Map">
+                <Option type="QString" name="angle" value="0"/>
+                <Option type="QString" name="cap_style" value="square"/>
+                <Option type="QString" name="color" value="164,113,88,255,rgb:0.64313725490196083,0.44313725490196076,0.34509803921568627,1"/>
+                <Option type="QString" name="horizontal_anchor_point" value="1"/>
+                <Option type="QString" name="joinstyle" value="bevel"/>
+                <Option type="QString" name="name" value="diamond"/>
+                <Option type="QString" name="offset" value="0,0"/>
+                <Option type="QString" name="offset_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="offset_unit" value="MM"/>
+                <Option type="QString" name="outline_color" value="117,81,63,255,rgb:0.45937285420004575,0.31653315022507056,0.24649423971923401,1"/>
+                <Option type="QString" name="outline_style" value="solid"/>
+                <Option type="QString" name="outline_width" value="0.2"/>
+                <Option type="QString" name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="scale_method" value="diameter"/>
+                <Option type="QString" name="size" value="3"/>
+                <Option type="QString" name="size_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+                <Option type="QString" name="vertical_anchor_point" value="1"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" name="name" value=""/>
+                  <Option name="properties"/>
+                  <Option type="QString" name="type" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </profileMarkerSymbol>
+      </elevation>
+      <renderer-v2 type="singleSymbol" referencescale="-1" forceraster="0" enableorderby="0" symbollevels="0">
+        <symbols>
+          <symbol type="marker" name="0" clip_to_extent="1" is_animated="0" alpha="1" frame_rate="10" force_rhr="0">
+            <data_defined_properties>
+              <Option type="Map">
+                <Option type="QString" name="name" value=""/>
+                <Option name="properties"/>
+                <Option type="QString" name="type" value="collection"/>
+              </Option>
+            </data_defined_properties>
+            <layer pass="0" id="{85dce4f7-8239-4f4e-8f8b-b65c498d1470}" locked="0" enabled="1" class="SimpleMarker">
+              <Option type="Map">
+                <Option type="QString" name="angle" value="0"/>
+                <Option type="QString" name="cap_style" value="square"/>
+                <Option type="QString" name="color" value="133,182,111,255,rgb:0.52156862745098043,0.71372549019607845,0.43529411764705883,1"/>
+                <Option type="QString" name="horizontal_anchor_point" value="1"/>
+                <Option type="QString" name="joinstyle" value="bevel"/>
+                <Option type="QString" name="name" value="circle"/>
+                <Option type="QString" name="offset" value="0,0"/>
+                <Option type="QString" name="offset_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="offset_unit" value="MM"/>
+                <Option type="QString" name="outline_color" value="35,35,35,255,rgb:0.13725490196078433,0.13725490196078433,0.13725490196078433,1"/>
+                <Option type="QString" name="outline_style" value="solid"/>
+                <Option type="QString" name="outline_width" value="0"/>
+                <Option type="QString" name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="outline_width_unit" value="MM"/>
+                <Option type="QString" name="scale_method" value="diameter"/>
+                <Option type="QString" name="size" value="2"/>
+                <Option type="QString" name="size_map_unit_scale" value="3x:0,0,0,0,0,0"/>
+                <Option type="QString" name="size_unit" value="MM"/>
+                <Option type="QString" name="vertical_anchor_point" value="1"/>
+              </Option>
+              <data_defined_properties>
+                <Option type="Map">
+                  <Option type="QString" name="name" value=""/>
+                  <Option name="properties"/>
+                  <Option type="QString" name="type" value="collection"/>
+                </Option>
+              </data_defined_properties>
+            </layer>
+          </symbol>
+        </symbols>
+        <rotation/>
+        <sizescale/>
+        <data-defined-properties>
+          <Option type="Map">
+            <Option type="QString" name="name" value=""/>
+            <Option name="properties"/>
+            <Option type="QString" name="type" value="collection"/>
+          </Option>
+        </data-defined-properties>
+      </renderer-v2>
+      <selection mode="Default">
+        <selectionColor invalid="1"/>
+      </selection>
+      <customproperties>
+        <Option/>
+      </customproperties>
+      <blendMode>0</blendMode>
+      <featureBlendMode>0</featureBlendMode>
+      <layerOpacity>1</layerOpacity>
+      <geometryOptions geometryPrecision="0" removeDuplicateNodes="0">
+        <activeChecks type="StringList">
+          <Option type="QString" value=""/>
+        </activeChecks>
+        <checkConfiguration/>
+      </geometryOptions>
+      <legend type="default-vector" showLabelLegend="0"/>
+      <referencedLayers/>
+      <referencingLayers/>
+      <fieldConfiguration>
+        <field name="OBJECTID_1" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="GM_ID" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NK" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="KOD" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="KN" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="FN" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NAME_BG" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NAME_LAT" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SINONIMI" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="L" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="B" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="Z" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="L_WGS84" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="B_WGS84" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="PLACE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SP_TYPE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SP" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="EKATTE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="SOURSE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="Z_SOURCE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="OPERATOR" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="DATE_C" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STATUS" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STUDY" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NOTES" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="DATE_A" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="MARK" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="F_CHECK" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="S_TYPE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="W_STATUS" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="NAME" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="GRMN_TYPE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="COUNTRY" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="CITY" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STATE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="PCODE" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STRT_ADDR" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="CITI_BG" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="CITI_EN" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STATE_BG" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STATE_EN" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="PCODE_BG" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="PCODE_EN" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STRT_ADDR_BG" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+        <field name="STRT_ADDR_EN" configurationFlags="NoFlag">
+          <editWidget type="">
+            <config>
+              <Option/>
+            </config>
+          </editWidget>
+        </field>
+      </fieldConfiguration>
+      <aliases>
+        <alias name="" index="0" field="OBJECTID_1"/>
+        <alias name="" index="1" field="GM_ID"/>
+        <alias name="" index="2" field="NK"/>
+        <alias name="" index="3" field="KOD"/>
+        <alias name="" index="4" field="KN"/>
+        <alias name="" index="5" field="FN"/>
+        <alias name="" index="6" field="NAME_BG"/>
+        <alias name="" index="7" field="NAME_LAT"/>
+        <alias name="" index="8" field="SINONIMI"/>
+        <alias name="" index="9" field="L"/>
+        <alias name="" index="10" field="B"/>
+        <alias name="" index="11" field="Z"/>
+        <alias name="" index="12" field="L_WGS84"/>
+        <alias name="" index="13" field="B_WGS84"/>
+        <alias name="" index="14" field="PLACE"/>
+        <alias name="" index="15" field="SP_TYPE"/>
+        <alias name="" index="16" field="SP"/>
+        <alias name="" index="17" field="EKATTE"/>
+        <alias name="" index="18" field="SOURSE"/>
+        <alias name="" index="19" field="Z_SOURCE"/>
+        <alias name="" index="20" field="OPERATOR"/>
+        <alias name="" index="21" field="DATE_C"/>
+        <alias name="" index="22" field="STATUS"/>
+        <alias name="" index="23" field="STUDY"/>
+        <alias name="" index="24" field="NOTES"/>
+        <alias name="" index="25" field="DATE_A"/>
+        <alias name="" index="26" field="MARK"/>
+        <alias name="" index="27" field="F_CHECK"/>
+        <alias name="" index="28" field="S_TYPE"/>
+        <alias name="" index="29" field="W_STATUS"/>
+        <alias name="" index="30" field="NAME"/>
+        <alias name="" index="31" field="GRMN_TYPE"/>
+        <alias name="" index="32" field="COUNTRY"/>
+        <alias name="" index="33" field="CITY"/>
+        <alias name="" index="34" field="STATE"/>
+        <alias name="" index="35" field="PCODE"/>
+        <alias name="" index="36" field="STRT_ADDR"/>
+        <alias name="" index="37" field="CITI_BG"/>
+        <alias name="" index="38" field="CITI_EN"/>
+        <alias name="" index="39" field="STATE_BG"/>
+        <alias name="" index="40" field="STATE_EN"/>
+        <alias name="" index="41" field="PCODE_BG"/>
+        <alias name="" index="42" field="PCODE_EN"/>
+        <alias name="" index="43" field="STRT_ADDR_BG"/>
+        <alias name="" index="44" field="STRT_ADDR_EN"/>
+      </aliases>
+      <splitPolicies>
+        <policy policy="Duplicate" field="OBJECTID_1"/>
+        <policy policy="Duplicate" field="GM_ID"/>
+        <policy policy="Duplicate" field="NK"/>
+        <policy policy="Duplicate" field="KOD"/>
+        <policy policy="Duplicate" field="KN"/>
+        <policy policy="Duplicate" field="FN"/>
+        <policy policy="Duplicate" field="NAME_BG"/>
+        <policy policy="Duplicate" field="NAME_LAT"/>
+        <policy policy="Duplicate" field="SINONIMI"/>
+        <policy policy="Duplicate" field="L"/>
+        <policy policy="Duplicate" field="B"/>
+        <policy policy="Duplicate" field="Z"/>
+        <policy policy="Duplicate" field="L_WGS84"/>
+        <policy policy="Duplicate" field="B_WGS84"/>
+        <policy policy="Duplicate" field="PLACE"/>
+        <policy policy="Duplicate" field="SP_TYPE"/>
+        <policy policy="Duplicate" field="SP"/>
+        <policy policy="Duplicate" field="EKATTE"/>
+        <policy policy="Duplicate" field="SOURSE"/>
+        <policy policy="Duplicate" field="Z_SOURCE"/>
+        <policy policy="Duplicate" field="OPERATOR"/>
+        <policy policy="Duplicate" field="DATE_C"/>
+        <policy policy="Duplicate" field="STATUS"/>
+        <policy policy="Duplicate" field="STUDY"/>
+        <policy policy="Duplicate" field="NOTES"/>
+        <policy policy="Duplicate" field="DATE_A"/>
+        <policy policy="Duplicate" field="MARK"/>
+        <policy policy="Duplicate" field="F_CHECK"/>
+        <policy policy="Duplicate" field="S_TYPE"/>
+        <policy policy="Duplicate" field="W_STATUS"/>
+        <policy policy="Duplicate" field="NAME"/>
+        <policy policy="Duplicate" field="GRMN_TYPE"/>
+        <policy policy="Duplicate" field="COUNTRY"/>
+        <policy policy="Duplicate" field="CITY"/>
+        <policy policy="Duplicate" field="STATE"/>
+        <policy policy="Duplicate" field="PCODE"/>
+        <policy policy="Duplicate" field="STRT_ADDR"/>
+        <policy policy="Duplicate" field="CITI_BG"/>
+        <policy policy="Duplicate" field="CITI_EN"/>
+        <policy policy="Duplicate" field="STATE_BG"/>
+        <policy policy="Duplicate" field="STATE_EN"/>
+        <policy policy="Duplicate" field="PCODE_BG"/>
+        <policy policy="Duplicate" field="PCODE_EN"/>
+        <policy policy="Duplicate" field="STRT_ADDR_BG"/>
+        <policy policy="Duplicate" field="STRT_ADDR_EN"/>
+      </splitPolicies>
+      <duplicatePolicies>
+        <policy policy="Duplicate" field="OBJECTID_1"/>
+        <policy policy="Duplicate" field="GM_ID"/>
+        <policy policy="Duplicate" field="NK"/>
+        <policy policy="Duplicate" field="KOD"/>
+        <policy policy="Duplicate" field="KN"/>
+        <policy policy="Duplicate" field="FN"/>
+        <policy policy="Duplicate" field="NAME_BG"/>
+        <policy policy="Duplicate" field="NAME_LAT"/>
+        <policy policy="Duplicate" field="SINONIMI"/>
+        <policy policy="Duplicate" field="L"/>
+        <policy policy="Duplicate" field="B"/>
+        <policy policy="Duplicate" field="Z"/>
+        <policy policy="Duplicate" field="L_WGS84"/>
+        <policy policy="Duplicate" field="B_WGS84"/>
+        <policy policy="Duplicate" field="PLACE"/>
+        <policy policy="Duplicate" field="SP_TYPE"/>
+        <policy policy="Duplicate" field="SP"/>
+        <policy policy="Duplicate" field="EKATTE"/>
+        <policy policy="Duplicate" field="SOURSE"/>
+        <policy policy="Duplicate" field="Z_SOURCE"/>
+        <policy policy="Duplicate" field="OPERATOR"/>
+        <policy policy="Duplicate" field="DATE_C"/>
+        <policy policy="Duplicate" field="STATUS"/>
+        <policy policy="Duplicate" field="STUDY"/>
+        <policy policy="Duplicate" field="NOTES"/>
+        <policy policy="Duplicate" field="DATE_A"/>
+        <policy policy="Duplicate" field="MARK"/>
+        <policy policy="Duplicate" field="F_CHECK"/>
+        <policy policy="Duplicate" field="S_TYPE"/>
+        <policy policy="Duplicate" field="W_STATUS"/>
+        <policy policy="Duplicate" field="NAME"/>
+        <policy policy="Duplicate" field="GRMN_TYPE"/>
+        <policy policy="Duplicate" field="COUNTRY"/>
+        <policy policy="Duplicate" field="CITY"/>
+        <policy policy="Duplicate" field="STATE"/>
+        <policy policy="Duplicate" field="PCODE"/>
+        <policy policy="Duplicate" field="STRT_ADDR"/>
+        <policy policy="Duplicate" field="CITI_BG"/>
+        <policy policy="Duplicate" field="CITI_EN"/>
+        <policy policy="Duplicate" field="STATE_BG"/>
+        <policy policy="Duplicate" field="STATE_EN"/>
+        <policy policy="Duplicate" field="PCODE_BG"/>
+        <policy policy="Duplicate" field="PCODE_EN"/>
+        <policy policy="Duplicate" field="STRT_ADDR_BG"/>
+        <policy policy="Duplicate" field="STRT_ADDR_EN"/>
+      </duplicatePolicies>
+      <defaults>
+        <default applyOnUpdate="0" expression="" field="OBJECTID_1"/>
+        <default applyOnUpdate="0" expression="" field="GM_ID"/>
+        <default applyOnUpdate="0" expression="" field="NK"/>
+        <default applyOnUpdate="0" expression="" field="KOD"/>
+        <default applyOnUpdate="0" expression="" field="KN"/>
+        <default applyOnUpdate="0" expression="" field="FN"/>
+        <default applyOnUpdate="0" expression="" field="NAME_BG"/>
+        <default applyOnUpdate="0" expression="" field="NAME_LAT"/>
+        <default applyOnUpdate="0" expression="" field="SINONIMI"/>
+        <default applyOnUpdate="0" expression="" field="L"/>
+        <default applyOnUpdate="0" expression="" field="B"/>
+        <default applyOnUpdate="0" expression="" field="Z"/>
+        <default applyOnUpdate="0" expression="" field="L_WGS84"/>
+        <default applyOnUpdate="0" expression="" field="B_WGS84"/>
+        <default applyOnUpdate="0" expression="" field="PLACE"/>
+        <default applyOnUpdate="0" expression="" field="SP_TYPE"/>
+        <default applyOnUpdate="0" expression="" field="SP"/>
+        <default applyOnUpdate="0" expression="" field="EKATTE"/>
+        <default applyOnUpdate="0" expression="" field="SOURSE"/>
+        <default applyOnUpdate="0" expression="" field="Z_SOURCE"/>
+        <default applyOnUpdate="0" expression="" field="OPERATOR"/>
+        <default applyOnUpdate="0" expression="" field="DATE_C"/>
+        <default applyOnUpdate="0" expression="" field="STATUS"/>
+        <default applyOnUpdate="0" expression="" field="STUDY"/>
+        <default applyOnUpdate="0" expression="" field="NOTES"/>
+        <default applyOnUpdate="0" expression="" field="DATE_A"/>
+        <default applyOnUpdate="0" expression="" field="MARK"/>
+        <default applyOnUpdate="0" expression="" field="F_CHECK"/>
+        <default applyOnUpdate="0" expression="" field="S_TYPE"/>
+        <default applyOnUpdate="0" expression="" field="W_STATUS"/>
+        <default applyOnUpdate="0" expression="" field="NAME"/>
+        <default applyOnUpdate="0" expression="" field="GRMN_TYPE"/>
+        <default applyOnUpdate="0" expression="" field="COUNTRY"/>
+        <default applyOnUpdate="0" expression="" field="CITY"/>
+        <default applyOnUpdate="0" expression="" field="STATE"/>
+        <default applyOnUpdate="0" expression="" field="PCODE"/>
+        <default applyOnUpdate="0" expression="" field="STRT_ADDR"/>
+        <default applyOnUpdate="0" expression="" field="CITI_BG"/>
+        <default applyOnUpdate="0" expression="" field="CITI_EN"/>
+        <default applyOnUpdate="0" expression="" field="STATE_BG"/>
+        <default applyOnUpdate="0" expression="" field="STATE_EN"/>
+        <default applyOnUpdate="0" expression="" field="PCODE_BG"/>
+        <default applyOnUpdate="0" expression="" field="PCODE_EN"/>
+        <default applyOnUpdate="0" expression="" field="STRT_ADDR_BG"/>
+        <default applyOnUpdate="0" expression="" field="STRT_ADDR_EN"/>
+      </defaults>
+      <constraints>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="OBJECTID_1"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="GM_ID"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="NK"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="KOD"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="KN"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="FN"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="NAME_BG"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="NAME_LAT"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="SINONIMI"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="L"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="B"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="Z"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="L_WGS84"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="B_WGS84"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="PLACE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="SP_TYPE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="SP"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="EKATTE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="SOURSE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="Z_SOURCE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="OPERATOR"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="DATE_C"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STATUS"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STUDY"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="NOTES"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="DATE_A"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="MARK"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="F_CHECK"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="S_TYPE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="W_STATUS"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="NAME"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="GRMN_TYPE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="COUNTRY"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="CITY"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STATE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="PCODE"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STRT_ADDR"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="CITI_BG"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="CITI_EN"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STATE_BG"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STATE_EN"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="PCODE_BG"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="PCODE_EN"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STRT_ADDR_BG"/>
+        <constraint notnull_strength="0" constraints="0" exp_strength="0" unique_strength="0" field="STRT_ADDR_EN"/>
+      </constraints>
+      <constraintExpressions>
+        <constraint desc="" exp="" field="OBJECTID_1"/>
+        <constraint desc="" exp="" field="GM_ID"/>
+        <constraint desc="" exp="" field="NK"/>
+        <constraint desc="" exp="" field="KOD"/>
+        <constraint desc="" exp="" field="KN"/>
+        <constraint desc="" exp="" field="FN"/>
+        <constraint desc="" exp="" field="NAME_BG"/>
+        <constraint desc="" exp="" field="NAME_LAT"/>
+        <constraint desc="" exp="" field="SINONIMI"/>
+        <constraint desc="" exp="" field="L"/>
+        <constraint desc="" exp="" field="B"/>
+        <constraint desc="" exp="" field="Z"/>
+        <constraint desc="" exp="" field="L_WGS84"/>
+        <constraint desc="" exp="" field="B_WGS84"/>
+        <constraint desc="" exp="" field="PLACE"/>
+        <constraint desc="" exp="" field="SP_TYPE"/>
+        <constraint desc="" exp="" field="SP"/>
+        <constraint desc="" exp="" field="EKATTE"/>
+        <constraint desc="" exp="" field="SOURSE"/>
+        <constraint desc="" exp="" field="Z_SOURCE"/>
+        <constraint desc="" exp="" field="OPERATOR"/>
+        <constraint desc="" exp="" field="DATE_C"/>
+        <constraint desc="" exp="" field="STATUS"/>
+        <constraint desc="" exp="" field="STUDY"/>
+        <constraint desc="" exp="" field="NOTES"/>
+        <constraint desc="" exp="" field="DATE_A"/>
+        <constraint desc="" exp="" field="MARK"/>
+        <constraint desc="" exp="" field="F_CHECK"/>
+        <constraint desc="" exp="" field="S_TYPE"/>
+        <constraint desc="" exp="" field="W_STATUS"/>
+        <constraint desc="" exp="" field="NAME"/>
+        <constraint desc="" exp="" field="GRMN_TYPE"/>
+        <constraint desc="" exp="" field="COUNTRY"/>
+        <constraint desc="" exp="" field="CITY"/>
+        <constraint desc="" exp="" field="STATE"/>
+        <constraint desc="" exp="" field="PCODE"/>
+        <constraint desc="" exp="" field="STRT_ADDR"/>
+        <constraint desc="" exp="" field="CITI_BG"/>
+        <constraint desc="" exp="" field="CITI_EN"/>
+        <constraint desc="" exp="" field="STATE_BG"/>
+        <constraint desc="" exp="" field="STATE_EN"/>
+        <constraint desc="" exp="" field="PCODE_BG"/>
+        <constraint desc="" exp="" field="PCODE_EN"/>
+        <constraint desc="" exp="" field="STRT_ADDR_BG"/>
+        <constraint desc="" exp="" field="STRT_ADDR_EN"/>
+      </constraintExpressions>
+      <expressionfields/>
+      <attributeactions>
+        <defaultAction key="Canvas" value="{00000000-0000-0000-0000-000000000000}"/>
+      </attributeactions>
+      <attributetableconfig actionWidgetStyle="dropDown" sortExpression="" sortOrder="0">
+        <columns/>
+      </attributetableconfig>
+      <conditionalstyles>
+        <rowstyles/>
+        <fieldstyles/>
+      </conditionalstyles>
+      <storedexpressions/>
+      <editform tolerant="1"></editform>
+      <editforminit/>
+      <editforminitcodesource>0</editforminitcodesource>
+      <editforminitfilepath></editforminitfilepath>
+      <editforminitcode><![CDATA[]]></editforminitcode>
+      <featformsuppress>0</featformsuppress>
+      <editorlayout>generatedlayout</editorlayout>
+      <editable/>
+      <labelOnTop/>
+      <reuseLastValue/>
+      <dataDefinedFieldProperties/>
+      <widgets/>
+      <previewExpression></previewExpression>
+      <mapTip enabled="1"></mapTip>
+    </maplayer>
+  </projectlayers>
+  <layerorder>
+    <layer id="GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344"/>
+  </layerorder>
+  <labelEngineSettings/>
+  <properties>
+    <Digitizing>
+      <AvoidIntersectionsMode type="int">0</AvoidIntersectionsMode>
+    </Digitizing>
+    <Gui>
+      <CanvasColorBluePart type="int">255</CanvasColorBluePart>
+      <CanvasColorGreenPart type="int">255</CanvasColorGreenPart>
+      <CanvasColorRedPart type="int">255</CanvasColorRedPart>
+      <SelectionColorAlphaPart type="int">255</SelectionColorAlphaPart>
+      <SelectionColorBluePart type="int">0</SelectionColorBluePart>
+      <SelectionColorGreenPart type="int">255</SelectionColorGreenPart>
+      <SelectionColorRedPart type="int">255</SelectionColorRedPart>
+    </Gui>
+    <Legend>
+      <filterByMap type="bool">false</filterByMap>
+    </Legend>
+    <Measure>
+      <Ellipsoid type="QString">EPSG:7030</Ellipsoid>
+    </Measure>
+    <Measurement>
+      <AreaUnits type="QString">m2</AreaUnits>
+      <DistanceUnits type="QString">meters</DistanceUnits>
+    </Measurement>
+    <PAL>
+      <CandidatesLinePerCM type="double">5</CandidatesLinePerCM>
+      <CandidatesPolygonPerCM type="double">2.5</CandidatesPolygonPerCM>
+      <DrawLabelMetrics type="bool">false</DrawLabelMetrics>
+      <DrawRectOnly type="bool">false</DrawRectOnly>
+      <DrawUnplaced type="bool">false</DrawUnplaced>
+      <PlacementEngineVersion type="int">1</PlacementEngineVersion>
+      <SearchMethod type="int">0</SearchMethod>
+      <ShowingAllLabels type="bool">false</ShowingAllLabels>
+      <ShowingCandidates type="bool">false</ShowingCandidates>
+      <ShowingPartialsLabels type="bool">true</ShowingPartialsLabels>
+      <TextFormat type="int">0</TextFormat>
+      <UnplacedColor type="QString">255,0,0,255,rgb:1,0,0,1</UnplacedColor>
+    </PAL>
+    <Paths>
+      <Absolute type="bool">false</Absolute>
+    </Paths>
+    <PositionPrecision>
+      <Automatic type="bool">true</Automatic>
+      <DecimalPlaces type="int">2</DecimalPlaces>
+    </PositionPrecision>
+    <SpatialRefSys>
+      <ProjectionsEnabled type="int">1</ProjectionsEnabled>
+    </SpatialRefSys>
+  </properties>
+  <dataDefinedServerProperties>
+    <Option type="Map">
+      <Option type="QString" name="name" value=""/>
+      <Option name="properties"/>
+      <Option type="QString" name="type" value="collection"/>
+    </Option>
+  </dataDefinedServerProperties>
+  <visibility-presets/>
+  <transformContext/>
+  <projectMetadata>
+    <identifier></identifier>
+    <parentidentifier></parentidentifier>
+    <language></language>
+    <type></type>
+    <title></title>
+    <abstract></abstract>
+    <links/>
+    <dates>
+      <date type="Created" value="2026-02-18T14:46:05"/>
+    </dates>
+    <author>Виктор Алексиев</author>
+    <creation>2026-02-18T14:46:05</creation>
+  </projectMetadata>
+  <Annotations/>
+  <Layouts/>
+  <mapViewDocks3D/>
+  <Bookmarks/>
+  <Sensors/>
+  <ProjectViewSettings UseProjectScales="0" rotation="0">
+    <Scales/>
+    <DefaultViewExtent ymax="44.18772931145962701" xmin="22.24971719805463621" xmax="28.56836591947698523" ymin="40.72172169231270544">
+      <spatialrefsys nativeFormat="Wkt">
+        <wkt>GEOGCRS["WGS 84 (CRS84)",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic longitude (Lon)",east,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic latitude (Lat)",north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Not known."],AREA["World."],BBOX[-90,-180,90,180]],ID["OGC","CRS84"]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>63159</srsid>
+        <srid>520003159</srid>
+        <authid>OGC:CRS84</authid>
+        <description>WGS 84 (CRS84)</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </DefaultViewExtent>
+  </ProjectViewSettings>
+  <ProjectStyleSettings projectStyleId="attachment:///GmebJJ_styles.db" RandomizeDefaultSymbolColor="1" iccProfileId="attachment:///" colorModel="Rgb" DefaultSymbolOpacity="1">
+    <databases/>
+  </ProjectStyleSettings>
+  <ProjectTimeSettings totalMovieFrames="100" timeStep="1" timeStepUnit="h" frameRate="1" cumulativeTemporalRange="0"/>
+  <ElevationProperties FilterInvertSlider="0">
+    <terrainProvider type="flat">
+      <TerrainProvider offset="0" scale="1"/>
+    </terrainProvider>
+  </ElevationProperties>
+  <ProjectDisplaySettings CoordinateAxisOrder="Default" CoordinateType="MapCrs">
+    <BearingFormat id="bearing">
+      <Option type="Map">
+        <Option type="invalid" name="decimal_separator"/>
+        <Option type="int" name="decimals" value="6"/>
+        <Option type="int" name="direction_format" value="0"/>
+        <Option type="int" name="rounding_type" value="0"/>
+        <Option type="bool" name="show_plus" value="false"/>
+        <Option type="bool" name="show_thousand_separator" value="true"/>
+        <Option type="bool" name="show_trailing_zeros" value="false"/>
+        <Option type="invalid" name="thousand_separator"/>
+      </Option>
+    </BearingFormat>
+    <GeographicCoordinateFormat id="geographiccoordinate">
+      <Option type="Map">
+        <Option type="QString" name="angle_format" value="DecimalDegrees"/>
+        <Option type="invalid" name="decimal_separator"/>
+        <Option type="int" name="decimals" value="6"/>
+        <Option type="int" name="rounding_type" value="0"/>
+        <Option type="bool" name="show_leading_degree_zeros" value="false"/>
+        <Option type="bool" name="show_leading_zeros" value="false"/>
+        <Option type="bool" name="show_plus" value="false"/>
+        <Option type="bool" name="show_suffix" value="false"/>
+        <Option type="bool" name="show_thousand_separator" value="true"/>
+        <Option type="bool" name="show_trailing_zeros" value="false"/>
+        <Option type="invalid" name="thousand_separator"/>
+      </Option>
+    </GeographicCoordinateFormat>
+    <CoordinateCustomCrs>
+      <spatialrefsys nativeFormat="Wkt">
+        <wkt>GEOGCRS["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble",MEMBER["World Geodetic System 1984 (Transit)"],MEMBER["World Geodetic System 1984 (G730)"],MEMBER["World Geodetic System 1984 (G873)"],MEMBER["World Geodetic System 1984 (G1150)"],MEMBER["World Geodetic System 1984 (G1674)"],MEMBER["World Geodetic System 1984 (G1762)"],MEMBER["World Geodetic System 1984 (G2139)"],MEMBER["World Geodetic System 1984 (G2296)"],ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1]],ENSEMBLEACCURACY[2.0]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["World."],BBOX[-90,-180,90,180]],ID["EPSG",4326]]</wkt>
+        <proj4>+proj=longlat +datum=WGS84 +no_defs</proj4>
+        <srsid>3452</srsid>
+        <srid>4326</srid>
+        <authid>EPSG:4326</authid>
+        <description>WGS 84</description>
+        <projectionacronym>longlat</projectionacronym>
+        <ellipsoidacronym>EPSG:7030</ellipsoidacronym>
+        <geographicflag>true</geographicflag>
+      </spatialrefsys>
+    </CoordinateCustomCrs>
+  </ProjectDisplaySettings>
+  <ProjectGpsSettings autoCommitFeatures="0" destinationLayerSource="D:\SPELEO_DATA_BASE\SPELEO.mdb|layername=GIS_SPELEO" destinationLayerName="SPELEO — GIS_SPELEO" destinationLayerProvider="ogr" destinationLayer="GIS_SPELEO_34423ec5_b4fe_4682_99dd_4d273f99d344" autoAddTrackVertices="0" destinationFollowsActiveLayer="1">
+    <timeStampFields/>
+  </ProjectGpsSettings>
+</qgis>
