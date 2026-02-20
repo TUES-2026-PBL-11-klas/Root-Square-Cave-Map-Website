@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Map UI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="frame">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="icon-btn" id="layersBtn" title="Menu">☰</button>
+  </div>
+
+  <!-- TOP-LEFT MENU -->
+  <div class="filter-menu" id="filterMenu" aria-hidden="true">
+    <div class="filter-menu__header">
+      <div class="filter-menu__title">Menu</div>
+    </div>
+
+    <div class="filter-menu__section">
+      <button class="primary-action" id="loginBtn">Login / Register</button>
+      <button class="secondary-action" id="openRequestModal">Request</button>
+    </div>
+  </div>
+
+  <!-- MAP AREA -->
+  <div id="mapArea">
+    <div class="map-placeholder">Map / Canvas Area</div>
+  </div>
+
+  <!-- SEARCH PANEL (top right) -->
+  <div class="search-panel">
+    <input id="searchInput" type="text" placeholder="Search..." />
+    <div class="search-results" id="searchResults">
+      <div>No recent searches</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CONTROLS -->
+  <div class="bottom-controls">
+    <button class="control-btn" id="zoomOut">−</button>
+    <button class="control-btn" id="zoomIn">+</button>
+    <div class="scale">Scale 1:1000</div>
+    <button class="filter-btn" id="filterToggleBtn" title="Filter"><img class="filter-icon" src="photos/funnel.png"/></button>
+  </div>
+
+  <!-- LEGEND / LAYERS PANEL (bottom-right) -->
+  <div class="filter-panel" id="filterPanel">
+    <h4>Filter</h4>
+    <label><input type="checkbox"> Sofia</label>
+    <label><input type="checkbox"> Yambol</label>
+    <label><input type="checkbox"> Plovidv</label>
+    <label><input type="checkbox"> Pernik (minite)</label>
+  </div>
+
+  <!-- REQUEST MODAL -->
+  <div class="modal" id="requestModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close="true"></div>
+
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
+      <div class="modal__header">
+        <div class="modal__title" id="requestModalTitle">Send Request</div>
+        <button class="icon-btn modal__close" id="closeRequestModal" title="Close">✕</button>
+      </div>
+
+      <form class="modal__body" id="requestForm">
+        <label class="field-label" for="reqName">Name</label>
+        <input id="reqName" type="text" placeholder="Your name" autocomplete="name" />
+
+        <label class="field-label" for="reqEmail">Email</label>
+        <input id="reqEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+
+        <label class="field-label" for="reqText">Request</label>
+        <textarea id="reqText" placeholder="Describe your request..."></textarea>
+
+        <div class="modal__footer">
+          <div class="modal__status" id="requestStatus"></div>
+          <button type="submit" class="primary-action modal__send" id="sendRequestBtn">Send</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- SUCCESS TOAST -->
+<div class="toast" id="toast">
+  Request sent successfully!
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
