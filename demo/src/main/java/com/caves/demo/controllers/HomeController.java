@@ -1,4 +1,4 @@
-package com.caves.demo;
+package com.caves.demo.controllers;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
