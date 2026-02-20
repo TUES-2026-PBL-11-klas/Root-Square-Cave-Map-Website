@@ -19,8 +19,11 @@ function openInNewTab(url) {
         return;
     }
 
+    // Replace spaces with dashes
+    const formattedUrl = url.replace(/\s+/g, '-');
+
     window.open(
-        "https://caves.speleo-bg.org/cave/" + url + "/",
+        "https://caves.speleo-bg.org/cave/" + formattedUrl + "/",
         "_blank"
     );
 }
@@ -31,4 +34,40 @@ window.openGooglemapsInNewTab = function(lat, lng) {
         return;
     }
     window.open("https://www.google.com/maps/place/" + lat + "," + lng, "_blank");
+};
+
+window.addLegendToggleControl = function(map) {
+
+    var legendControl = L.Control.extend({
+        options: { position: 'topleft' }, // below zoom & geolocate
+
+        onAdd: function () {
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+            container.style.backgroundColor = '#fff';
+            container.style.width = '34px';
+            container.style.height = '34px';
+            container.style.cursor = 'pointer';
+            container.style.display = 'flex';
+            container.style.alignItems = 'center';
+            container.style.justifyContent = 'center';
+            container.title = 'Покажи/скрий легендата';
+
+            container.innerHTML = '🗺️';
+
+            // Prevent clicks from propagating to map
+            L.DomEvent.disableClickPropagation(container);
+
+            // Toggle legend div
+            container.onclick = function () {
+                var legend = document.getElementById('map-legend');
+                if (legend) {
+                    legend.style.display = (legend.style.display === 'none') ? 'block' : 'none';
+                }
+            };
+
+            return container;
+        }
+    });
+
+    map.addControl(new legendControl());
 };
