@@ -595,7 +595,7 @@
         col1.style.height = "99%";
         col1.style.width = "80%";
         col1.style.display = "inline-block";
-        var col2 = document.createElement('div');
+                var col2 = document.createElement('div');
         col2.className="col3";
         col2.id = "menu";
         col2.style.display = "inline-block";
@@ -693,29 +693,135 @@
           }
           })
         }
-            document.getElementById("menu").appendChild(
-                document.createElement("div"));
-            var div_NAME_BG = document.createElement('div');
-            div_NAME_BG.id = "div_NAME_BG";
-            div_NAME_BG.className= "filterselect";
-            document.getElementById("menu").appendChild(div_NAME_BG);
-            sel_NAME_BG = document.createElement('select');
-            sel_NAME_BG.multiple = true;
-            sel_NAME_BG.size = 10;
-            sel_NAME_BG.id = "sel_NAME_BG";
-            var NAME_BG_options_str = "<option value='' unselected></option>";
-            sel_NAME_BG.onchange = function(){filterFunc()};
-            NAME_BG_options_str  += '<option value="NULL">NULL</option>';
-            NAME_BG_options_str  += '<option value="2989">2989</option>';
-            NAME_BG_options_str  += '<option value="2992">2992</option>';
-            NAME_BG_options_str  += '<option value="2993">2993</option>';
-            NAME_BG_options_str  += '<option value="2994">2994</option>';
-            NAME_BG_options_str  += '<option value="2996">2996</option>';
-            NAME_BG_options_str  += '<option value="2997">2997</option>';
-            NAME_BG_options_str  += '<option value="4286">4286</option>';
-            NAME_BG_options_str  += '<option value="5316">5316</option>';
-            NAME_BG_options_str  += '<option value="5317">5317</option>';
-            NAME_BG_options_str  += '<option value="Mob">Mob</option>';
+        //=============================================================
+
+        function createSearchFilter(containerId, selectId, labelText, optionsString) {
+  var menu = document.getElementById(containerId);
+
+  // spacer
+  menu.appendChild(document.createElement("div"));
+
+  // main container for this filter
+  var div = document.createElement("div");
+  div.className = "filterselect";
+  div.id = "div_" + selectId.replace("sel_", "");
+  div.style.border = "1px solid #ccc";
+  div.style.padding = "8px";
+  div.style.marginBottom = "10px";
+  div.style.borderRadius = "6px";
+  div.style.background = "#f9f9f9";
+  menu.appendChild(div);
+
+  // hidden select (used by filterFunc)
+  var sel = document.createElement("select");
+  sel.id = selectId;
+  sel.multiple = true;
+  sel.size = 10;
+  sel.style.display = "none";
+  sel.innerHTML = optionsString;
+  sel.onchange = function() { filterFunc(); };
+  div.appendChild(sel);
+
+  // label
+  var lab = document.createElement("div");
+  lab.className = "filterlabel";
+  lab.innerHTML = labelText;
+  lab.style.fontWeight = "bold";
+  lab.style.marginBottom = "6px";
+  div.appendChild(lab);
+
+  // search input
+  var search = document.createElement("input");
+  search.type = "text";
+  search.placeholder = "Търсене…";
+  search.style.width = "100%";
+  search.style.padding = "4px 6px";
+  search.style.marginBottom = "6px";
+  search.style.border = "1px solid #ccc";
+  search.style.borderRadius = "4px";
+  div.appendChild(search);
+
+  // dropdown container
+  var dropdown = document.createElement("div");
+  dropdown.style.maxHeight = "180px";
+  dropdown.style.overflowY = "auto";
+  dropdown.style.border = "1px solid #ccc";
+  dropdown.style.padding = "4px";
+  dropdown.style.background = "#fff";
+  dropdown.style.borderRadius = "4px";
+  dropdown.style.marginBottom = "6px";
+  div.appendChild(dropdown);
+
+  // build the dropdown checkboxes
+  function buildDropdown(filterText = "") {
+    dropdown.innerHTML = "";
+
+    Array.from(sel.options).forEach(function(opt) {
+      if (!opt.value) return;
+
+      if (
+        filterText &&
+        opt.value.toLowerCase().indexOf(filterText.toLowerCase()) === -1
+      ) return;
+
+      var label = document.createElement("label");
+      label.style.display = "block";
+      label.style.cursor = "pointer";
+      label.style.padding = "2px 0";
+
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = opt.selected;
+
+      cb.onchange = function () {
+        opt.selected = cb.checked;
+        filterFunc();
+      };
+
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(" " + opt.value));
+      dropdown.appendChild(label);
+    });
+  }
+
+  // live search
+  search.addEventListener("input", function () {
+    buildDropdown(this.value);
+  });
+
+  // clear filter button
+  var reset = document.createElement("div");
+  reset.className = "filterlabel";
+  reset.innerHTML = "clear filter";
+  reset.style.cursor = "pointer";
+  reset.style.color = "#d9534f"; // red-ish
+  reset.style.fontWeight = "bold";
+  reset.style.marginTop = "4px";
+
+  // hover effect
+  reset.addEventListener("mouseover", function() {
+    reset.style.color = "#a94442";
+    reset.style.textDecoration = "underline";
+  });
+  reset.addEventListener("mouseout", function() {
+    reset.style.color = "#d9534f";
+    reset.style.textDecoration = "none";
+  });
+
+  // click clears both selected options AND search input
+  reset.onclick = function () {
+    Array.from(sel.options).forEach(o => o.selected = false);
+    search.value = "";          // <-- clear the search box
+    buildDropdown();            // rebuild dropdown with all options
+    filterFunc();
+  };
+  div.appendChild(reset);
+
+  // initial build
+  buildDropdown();
+}
+
+            var NAME_BG_options_str  = '<option value="Mob">Mob</option>';
             NAME_BG_options_str  += '<option value="Nova">Nova</option>';
             NAME_BG_options_str  += '<option value="PV 4">PV 4</option>';
             NAME_BG_options_str  += '<option value="S-20">S-20</option>';
@@ -1891,36 +1997,24 @@
             NAME_BG_options_str  += '<option value="№ 7">№ 7</option>';
             NAME_BG_options_str  += '<option value="№ 8">№ 8</option>';
             NAME_BG_options_str  += '<option value="№6">№6</option>';
-            sel_NAME_BG.innerHTML = NAME_BG_options_str;
-            div_NAME_BG.appendChild(sel_NAME_BG);
-            var lab_NAME_BG = document.createElement('div');
-            lab_NAME_BG.innerHTML = 'NAME_BG';
-            lab_NAME_BG.className = 'filterlabel';
-            div_NAME_BG.appendChild(lab_NAME_BG);
-            var reset_NAME_BG = document.createElement('div');
-            reset_NAME_BG.innerHTML = 'clear filter';
-            reset_NAME_BG.className = 'filterlabel';
-            reset_NAME_BG.onclick = function() {
-                var options = document.getElementById("sel_NAME_BG").options;
-                for (var i=0; i < options.length; i++) {
-                    options[i].selected = false;
-                }
-                filterFunc();
-            };
-            div_NAME_BG.appendChild(reset_NAME_BG);
-            document.getElementById("menu").appendChild(
-                document.createElement("div"));
-            var div_S_TYPE = document.createElement('div');
-            div_S_TYPE.id = "div_S_TYPE";
-            div_S_TYPE.className= "filterselect";
-            document.getElementById("menu").appendChild(div_S_TYPE);
-            sel_S_TYPE = document.createElement('select');
-            sel_S_TYPE.multiple = true;
-            sel_S_TYPE.size = 10;
-            sel_S_TYPE.id = "sel_S_TYPE";
-            var S_TYPE_options_str = "<option value='' unselected></option>";
-            sel_S_TYPE.onchange = function(){filterFunc()};
-            S_TYPE_options_str  += '<option value="Индикация за проверка">Индикация за проверка</option>';
+            NAME_BG_options_str  += '<option value="2989">2989</option>';
+            NAME_BG_options_str  += '<option value="2992">2992</option>';
+            NAME_BG_options_str  += '<option value="2993">2993</option>';
+            NAME_BG_options_str  += '<option value="2994">2994</option>';
+            NAME_BG_options_str  += '<option value="2996">2996</option>';
+            NAME_BG_options_str  += '<option value="2997">2997</option>';
+            NAME_BG_options_str  += '<option value="4286">4286</option>';
+            NAME_BG_options_str  += '<option value="5316">5316</option>';
+            NAME_BG_options_str  += '<option value="5317">5317</option>';
+			
+            createSearchFilter(
+            "menu",
+            "sel_NAME_BG",
+            "Име на пещерата",
+            NAME_BG_options_str
+            );
+
+            var S_TYPE_options_str  = '<option value="Индикация за проверка">Индикация за проверка</option>';
             S_TYPE_options_str  += '<option value="Индикация проверена безперспективна">Индикация проверена безперспективна</option>';
             S_TYPE_options_str  += '<option value="Индикация проверена с перспективи">Индикация проверена с перспективи</option>';
             S_TYPE_options_str  += '<option value="Пещера">Пещера</option>';
@@ -1935,36 +2029,15 @@
             S_TYPE_options_str  += '<option value="Пропастна пещера в процес на проучване">Пропастна пещера в процес на проучване</option>';
             S_TYPE_options_str  += '<option value="Пропастна пещера защитен обект">Пропастна пещера защитен обект</option>';
             S_TYPE_options_str  += '<option value="Пропастна пещера проучена">Пропастна пещера проучена</option>';
-            sel_S_TYPE.innerHTML = S_TYPE_options_str;
-            div_S_TYPE.appendChild(sel_S_TYPE);
-            var lab_S_TYPE = document.createElement('div');
-            lab_S_TYPE.innerHTML = 'S_TYPE';
-            lab_S_TYPE.className = 'filterlabel';
-            div_S_TYPE.appendChild(lab_S_TYPE);
-            var reset_S_TYPE = document.createElement('div');
-            reset_S_TYPE.innerHTML = 'clear filter';
-            reset_S_TYPE.className = 'filterlabel';
-            reset_S_TYPE.onclick = function() {
-                var options = document.getElementById("sel_S_TYPE").options;
-                for (var i=0; i < options.length; i++) {
-                    options[i].selected = false;
-                }
-                filterFunc();
-            };
-            div_S_TYPE.appendChild(reset_S_TYPE);
-            document.getElementById("menu").appendChild(
-                document.createElement("div"));
-            var div_CITI_BG = document.createElement('div');
-            div_CITI_BG.id = "div_CITI_BG";
-            div_CITI_BG.className= "filterselect";
-            document.getElementById("menu").appendChild(div_CITI_BG);
-            sel_CITI_BG = document.createElement('select');
-            sel_CITI_BG.multiple = true;
-            sel_CITI_BG.size = 10;
-            sel_CITI_BG.id = "sel_CITI_BG";
-            var CITI_BG_options_str = "<option value='' unselected></option>";
-            sel_CITI_BG.onchange = function(){filterFunc()};
-            CITI_BG_options_str  += '<option value="гр.Асеновград">гр.Асеновград</option>';
+			
+            createSearchFilter(
+            "menu",
+            "sel_S_TYPE",
+            "Тип на пещерата",
+            S_TYPE_options_str
+            );
+
+            var CITI_BG_options_str  = '<option value="гр.Асеновград">гр.Асеновград</option>';
             CITI_BG_options_str  += '<option value="гр.Банско">гр.Банско</option>';
             CITI_BG_options_str  += '<option value="гр.Белослав">гр.Белослав</option>';
             CITI_BG_options_str  += '<option value="гр.Берковица">гр.Берковица</option>';
@@ -2179,23 +2252,15 @@
             CITI_BG_options_str  += '<option value="с.Шума">с.Шума</option>';
             CITI_BG_options_str  += '<option value="с.Ъглен">с.Ъглен</option>';
             CITI_BG_options_str  += '<option value="с.Ягодина">с.Ягодина</option>';
-            sel_CITI_BG.innerHTML = CITI_BG_options_str;
-            div_CITI_BG.appendChild(sel_CITI_BG);
-            var lab_CITI_BG = document.createElement('div');
-            lab_CITI_BG.innerHTML = 'CITI_BG';
-            lab_CITI_BG.className = 'filterlabel';
-            div_CITI_BG.appendChild(lab_CITI_BG);
-            var reset_CITI_BG = document.createElement('div');
-            reset_CITI_BG.innerHTML = 'clear filter';
-            reset_CITI_BG.className = 'filterlabel';
-            reset_CITI_BG.onclick = function() {
-                var options = document.getElementById("sel_CITI_BG").options;
-                for (var i=0; i < options.length; i++) {
-                    options[i].selected = false;
-                }
-                filterFunc();
-            };
-            div_CITI_BG.appendChild(reset_CITI_BG);
+
+
+            createSearchFilter(
+            "menu",
+            "sel_CITI_BG",
+            "Населено място",
+            CITI_BG_options_str
+            );
+
         </script>        
     </body>
 </html>
