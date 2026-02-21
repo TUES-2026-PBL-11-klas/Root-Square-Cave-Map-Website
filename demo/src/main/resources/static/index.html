@@ -53,7 +53,7 @@
     <h4>Filter</h4>
     <label><input type="checkbox"> Sofia</label>
     <label><input type="checkbox"> Yambol</label>
-    <label><input type="checkbox"> Plovidv</label>
+    <label><input type="checkbox"> Plovdiv (Bushido)</label>
     <label><input type="checkbox"> Pernik (minite)</label>
   </div>
 
@@ -85,6 +85,58 @@
     </div>
   </div>
 
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal" id="authModal" aria-hidden="true">
+  <div class="modal__backdrop" data-auth-close="true"></div>
+
+  <div class="modal__dialog" role="dialog" aria-modal="true">
+    <div class="modal__header">
+      <div class="modal__title">Account</div>
+      <button class="icon-btn modal__close" id="closeAuthModal" title="Close">✕</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="loginTab">Login</button>
+      <button class="auth-tab" id="registerTab">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form class="modal__body auth-form" id="loginForm">
+      <label class="field-label">Email</label>
+      <input id="loginEmail" type="email" placeholder="Email" />
+
+      <label class="field-label">Password</label>
+      <input id="loginPassword" type="password" placeholder="Password" />
+
+      <div class="modal__footer">
+        <div class="modal__status" id="loginStatus"></div>
+        <button type="submit" class="primary-action modal__send">Login</button>
+      </div>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form class="modal__body auth-form hidden" id="registerForm">
+      <label class="field-label">Name</label>
+      <input id="regName" type="text" placeholder="Full name" />
+
+      <label class="field-label">Email</label>
+      <input id="regEmail" type="email" placeholder="Email" />
+
+      <label class="field-label">Password</label>
+      <input id="regPassword" type="password" placeholder="Password" />
+
+      <label class="field-label">Confirm Password</label>
+      <input id="regPassword2" type="password" placeholder="Confirm password" />
+
+      <div class="modal__footer">
+        <div class="modal__status" id="registerStatus"></div>
+        <button type="submit" class="primary-action modal__send">Register</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- SUCCESS TOAST -->
