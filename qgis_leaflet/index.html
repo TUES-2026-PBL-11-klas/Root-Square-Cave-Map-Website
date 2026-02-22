@@ -1,0 +1,2266 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+        <link rel="stylesheet" href="css/my_style.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/tailDT.js"></script>
+        <script src="js/custom_functions.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/SPELEOGIS_SPELEO_3.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: 'rgba(255, 255, 0, 1.00)',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: 'rgba(255, 255, 0, 1.00)',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:19, minZoom:4
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_GoogleTerrain_0');
+        map.getPane('pane_GoogleTerrain_0').style.zIndex = 400;
+        var layer_GoogleTerrain_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleTerrain_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 4,
+            maxZoom: 19,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleTerrain_0;
+        map.createPane('pane_GoogleHybrid_1');
+        map.getPane('pane_GoogleHybrid_1').style.zIndex = 401;
+        var layer_GoogleHybrid_1 = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleHybrid_1',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 4,
+            maxZoom: 19,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleHybrid_1;
+        map.createPane('pane_GoogleRoad_2');
+        map.getPane('pane_GoogleRoad_2').style.zIndex = 402;
+        var layer_GoogleRoad_2 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleRoad_2',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 4,
+            maxZoom: 19,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleRoad_2;
+        map.addLayer(layer_GoogleRoad_2);
+        function pop_SPELEOGIS_SPELEO_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Име</th>\
+                        <td class="visible-with-data" id="NAME_BG">' +
+                            (feature.properties['NAME_BG'] !== null
+                                ? autolinker.link(String(feature.properties['NAME_BG']))
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Синоними</th>\
+                        <td class="visible-with-data" id="SINONIMI">' +
+                            (feature.properties['SINONIMI'] !== null
+                                ? autolinker.link(String(feature.properties['SINONIMI']))
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Кота</th>\
+                        <td class="visible-with-data" id="Z">' +
+                            (feature.properties['Z'] !== null
+                                ? feature.properties['Z']
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Г. дължина</th>\
+                        <td class="visible-with-data" id="L_WGS84">' +
+                            (feature.properties['L_WGS84'] !== null
+                                ? feature.properties['L_WGS84']
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Г. ширина</th>\
+                        <td class="visible-with-data" id="B_WGS84">' +
+                            (feature.properties['B_WGS84'] !== null
+                                ? feature.properties['B_WGS84']
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Място</th>\
+                        <td class="visible-with-data" id="PLACE">' +
+                            (feature.properties['PLACE'] !== null
+                                ? autolinker.link(String(feature.properties['PLACE']))
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Статус</th>\
+                        <td class="visible-with-data" id="F_CHECK">' +
+                            (feature.properties['F_CHECK'] !== null
+                                ? feature.properties['F_CHECK']
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Тип</th>\
+                        <td class="visible-with-data" id="S_TYPE">' +
+                            (feature.properties['S_TYPE'] !== null
+                                ? feature.properties['S_TYPE']
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Град</th>\
+                        <td class="visible-with-data" id="CITI_BG">' +
+                            (feature.properties['CITI_BG'] !== null
+                                ? feature.properties['CITI_BG']
+                                : '') +
+                        '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2" style="text-align:center; padding-top:10px;">\
+                            <button onclick="copyCoords(\'' +
+                                feature.properties['L_WGS84'] + '\',\'' +
+                                feature.properties['B_WGS84'] +
+                            '\')">📋 Копирай координати</button>\
+                            <button onclick="openInNewTab(\'' +
+                                feature.properties['NAME_LAT'] +
+                            '\')">🌐 Отвори в регистъра</button>\
+                            <button onclick="openGooglemapsInNewTab(' +
+                                feature.properties['B_WGS84'] + ',' +
+                                feature.properties['L_WGS84'] +
+                            ')">🗺️ Google Maps</button>\
+                        </td>\
+                    </tr>\
+                    </table>';
+
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+
+            layer.on('popupopen', function (e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+
+            layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_SPELEOGIS_SPELEO_3_0(feature) {
+            switch(String(feature.properties['S_TYPE'])) {
+                case 'Индикация за проверка':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,224,126,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Индикация проверена безперспективна':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(86,86,230,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Индикация проверена с перспективи':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(57,221,139,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пещера':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,13,195,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пещера в процес на проучване':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(203,75,32,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пещера защитен обект':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(93,203,108,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пещера не проучена':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(45,109,213,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пещера проучена':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,138,150,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропаст в процес на проучване':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(188,231,115,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропаст защитен обект':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,137,22,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропаст не проучена':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(82,194,231,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропаст проучена':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(90,220,205,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропастна пещера в процес на проучване':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(169,130,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропастна пещера защитен обект':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(191,88,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Пропастна пещера проучена':
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(123,200,95,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_SPELEOGIS_SPELEO_3',
+                radius: 6.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(234,99,167,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_SPELEOGIS_SPELEO_3');
+        map.getPane('pane_SPELEOGIS_SPELEO_3').style.zIndex = 403;
+        map.getPane('pane_SPELEOGIS_SPELEO_3').style['mix-blend-mode'] = 'normal';
+        var layer_SPELEOGIS_SPELEO_3 = new L.geoJson(json_SPELEOGIS_SPELEO_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_SPELEOGIS_SPELEO_3',
+            layerName: 'layer_SPELEOGIS_SPELEO_3',
+            pane: 'pane_SPELEOGIS_SPELEO_3',
+            onEachFeature: pop_SPELEOGIS_SPELEO_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_SPELEOGIS_SPELEO_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_SPELEOGIS_SPELEO_3);
+        map.addLayer(layer_SPELEOGIS_SPELEO_3);
+        var overlaysTree = [
+            { label: "<b>Опции за карта</b>" },
+            { label: "Базова карта", layer: layer_GoogleRoad_2 },
+            { label: "Сателитна карта", layer: layer_GoogleHybrid_1 },
+            { label: "Карта на терена", layer: layer_GoogleTerrain_0 },
+            { label: "<b>Легенда</b>" },
+            {label: 'Слой с точки на пещерите<br /><table><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Индикациязапроверка0.png" /></td><td>Индикация за проверка</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Индикацияпроверенабезперспективна1.png" /></td><td>Индикация проверена безперспективна</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Индикацияпроверенасперспективи2.png" /></td><td>Индикация проверена с перспективи</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пещера3.png" /></td><td>Пещера</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пещеравпроцеснапроучване4.png" /></td><td>Пещера в процес на проучване</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пещеразащитенобект5.png" /></td><td>Пещера защитен обект</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пещеранепроучена6.png" /></td><td>Пещера не проучена</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пещерапроучена7.png" /></td><td>Пещера проучена</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропаствпроцеснапроучване8.png" /></td><td>Пропаст в процес на проучване</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропастзащитенобект9.png" /></td><td>Пропаст защитен обект</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропастнепроучена10.png" /></td><td>Пропаст не проучена</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропастпроучена11.png" /></td><td>Пропаст проучена</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропастнапещеравпроцеснапроучване12.png" /></td><td>Пропастна пещера в процес на проучване</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропастнапещеразащитенобект13.png" /></td><td>Пропастна пещера защитен обект</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_Пропастнапещерапроучена14.png" /></td><td>Пропастна пещера проучена</td></tr><tr><td style="text-align: center;"><img src="legend/SPELEOGIS_SPELEO_3_15.png" /></td><td></td></tr></table>', layer: layer_SPELEOGIS_SPELEO_3},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+                var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"NAME_BG": "str","S_TYPE": "str","CITI_BG": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+        //=============================================================
+
+        function createSearchFilter(containerId, selectId, labelText, optionsString) {
+  var menu = document.getElementById(containerId);
+
+  // spacer
+  menu.appendChild(document.createElement("div"));
+
+  // main container for this filter
+  var div = document.createElement("div");
+  div.className = "filterselect";
+  div.id = "div_" + selectId.replace("sel_", "");
+  div.style.border = "1px solid #ccc";
+  div.style.padding = "8px";
+  div.style.marginBottom = "10px";
+  div.style.borderRadius = "6px";
+  div.style.background = "#f9f9f9";
+  menu.appendChild(div);
+
+  // hidden select (used by filterFunc)
+  var sel = document.createElement("select");
+  sel.id = selectId;
+  sel.multiple = true;
+  sel.size = 10;
+  sel.style.display = "none";
+  sel.innerHTML = optionsString;
+  sel.onchange = function() { filterFunc(); };
+  div.appendChild(sel);
+
+  // label
+  var lab = document.createElement("div");
+  lab.className = "filterlabel";
+  lab.innerHTML = labelText;
+  lab.style.fontWeight = "bold";
+  lab.style.marginBottom = "6px";
+  div.appendChild(lab);
+
+  // search input
+  var search = document.createElement("input");
+  search.type = "text";
+  search.placeholder = "Търсене…";
+  search.style.width = "100%";
+  search.style.padding = "4px 6px";
+  search.style.marginBottom = "6px";
+  search.style.border = "1px solid #ccc";
+  search.style.borderRadius = "4px";
+  div.appendChild(search);
+
+  // dropdown container
+  var dropdown = document.createElement("div");
+  dropdown.style.maxHeight = "180px";
+  dropdown.style.overflowY = "auto";
+  dropdown.style.border = "1px solid #ccc";
+  dropdown.style.padding = "4px";
+  dropdown.style.background = "#fff";
+  dropdown.style.borderRadius = "4px";
+  dropdown.style.marginBottom = "6px";
+  div.appendChild(dropdown);
+
+  // build the dropdown checkboxes
+  function buildDropdown(filterText = "") {
+    dropdown.innerHTML = "";
+
+    Array.from(sel.options).forEach(function(opt) {
+      if (!opt.value) return;
+
+      if (
+        filterText &&
+        opt.value.toLowerCase().indexOf(filterText.toLowerCase()) === -1
+      ) return;
+
+      var label = document.createElement("label");
+      label.style.display = "block";
+      label.style.cursor = "pointer";
+      label.style.padding = "2px 0";
+
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = opt.selected;
+
+      cb.onchange = function () {
+        opt.selected = cb.checked;
+        filterFunc();
+      };
+
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(" " + opt.value));
+      dropdown.appendChild(label);
+    });
+  }
+
+  // live search
+  search.addEventListener("input", function () {
+    buildDropdown(this.value);
+  });
+
+  // clear filter button
+  var reset = document.createElement("div");
+  reset.className = "filterlabel";
+  reset.innerHTML = "clear filter";
+  reset.style.cursor = "pointer";
+  reset.style.color = "#d9534f"; // red-ish
+  reset.style.fontWeight = "bold";
+  reset.style.marginTop = "4px";
+
+  // hover effect
+  reset.addEventListener("mouseover", function() {
+    reset.style.color = "#a94442";
+    reset.style.textDecoration = "underline";
+  });
+  reset.addEventListener("mouseout", function() {
+    reset.style.color = "#d9534f";
+    reset.style.textDecoration = "none";
+  });
+
+  // click clears both selected options AND search input
+  reset.onclick = function () {
+    Array.from(sel.options).forEach(o => o.selected = false);
+    search.value = "";          // <-- clear the search box
+    buildDropdown();            // rebuild dropdown with all options
+    filterFunc();
+  };
+  div.appendChild(reset);
+
+  // initial build
+  buildDropdown();
+}
+
+            var NAME_BG_options_str  = '<option value="Mob">Mob</option>';
+            NAME_BG_options_str  += '<option value="Nova">Nova</option>';
+            NAME_BG_options_str  += '<option value="PV 4">PV 4</option>';
+            NAME_BG_options_str  += '<option value="S-20">S-20</option>';
+            NAME_BG_options_str  += '<option value="S-29">S-29</option>';
+            NAME_BG_options_str  += '<option value="S-30">S-30</option>';
+            NAME_BG_options_str  += '<option value="S101">S101</option>';
+            NAME_BG_options_str  += '<option value="S20">S20</option>';
+            NAME_BG_options_str  += '<option value="S22">S22</option>';
+            NAME_BG_options_str  += '<option value="S3 Пещ.под в.Сокола">S3 Пещ.под в.Сокола</option>';
+            NAME_BG_options_str  += '<option value="S31">S31</option>';
+            NAME_BG_options_str  += '<option value="TT49">TT49</option>';
+            NAME_BG_options_str  += '<option value="U2">U2</option>';
+            NAME_BG_options_str  += '<option value="АКАДЕМИК">АКАДЕМИК</option>';
+            NAME_BG_options_str  += '<option value="АНДЪКА">АНДЪКА</option>';
+            NAME_BG_options_str  += '<option value="АХМЕТОВА">АХМЕТОВА</option>';
+            NAME_BG_options_str  += '<option value="Агличина дупка">Агличина дупка</option>';
+            NAME_BG_options_str  += '<option value="Адемова">Адемова</option>';
+            NAME_BG_options_str  += '<option value="Академик">Академик</option>';
+            NAME_BG_options_str  += '<option value="Алеко">Алеко</option>';
+            NAME_BG_options_str  += '<option value="Алчак ин">Алчак ин</option>';
+            NAME_BG_options_str  += '<option value="Андров въртоп">Андров въртоп</option>';
+            NAME_BG_options_str  += '<option value="Арамлийска пещера">Арамлийска пещера</option>';
+            NAME_BG_options_str  += '<option value="Арбанашката пещера">Арбанашката пещера</option>';
+            NAME_BG_options_str  += '<option value="Арката">Арката</option>';
+            NAME_BG_options_str  += '<option value="Ашик дупка">Ашик дупка</option>';
+            NAME_BG_options_str  += '<option value="Ашкина дупка">Ашкина дупка</option>';
+            NAME_BG_options_str  += '<option value="БАНКОВИЦА">БАНКОВИЦА</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 1">БАРКИ 1</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 10">БАРКИ 10</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 12">БАРКИ 12</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 14">БАРКИ 14</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 3">БАРКИ 3</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 7">БАРКИ 7</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 8 25 ГОДИНИ АКАДЕМИК">БАРКИ 8 25 ГОДИНИ АКАДЕМИК</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ 9 И БАРКИ 16">БАРКИ 9 И БАРКИ 16</option>';
+            NAME_BG_options_str  += '<option value="БАРКИ14">БАРКИ14</option>';
+            NAME_BG_options_str  += '<option value="БАРКИТЕ 13">БАРКИТЕ 13</option>';
+            NAME_BG_options_str  += '<option value="БАЧО КИРО">БАЧО КИРО</option>';
+            NAME_BG_options_str  += '<option value="БЕЗИМЕННА 1">БЕЗИМЕННА 1</option>';
+            NAME_BG_options_str  += '<option value="БЕЗИМЕННА 110">БЕЗИМЕННА 110</option>';
+            NAME_BG_options_str  += '<option value="БЕЗИМЕННА 139">БЕЗИМЕННА 139</option>';
+            NAME_BG_options_str  += '<option value="БЕЗИМЕННА 353">БЕЗИМЕННА 353</option>';
+            NAME_BG_options_str  += '<option value="БЕЛОПОЛЯНСКАТА ПЕЩЕРА">БЕЛОПОЛЯНСКАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="БЕЛЯРА">БЕЛЯРА</option>';
+            NAME_BG_options_str  += '<option value="БЕНКОВСКАТА ПЕЩЕРА">БЕНКОВСКАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="БИЛЯРНИКА">БИЛЯРНИКА</option>';
+            NAME_BG_options_str  += '<option value="БИСЕРНА">БИСЕРНА</option>';
+            NAME_BG_options_str  += '<option value="БОГОВА ЛИВАДА">БОГОВА ЛИВАДА</option>';
+            NAME_BG_options_str  += '<option value="БОЖИЯ МОСТ">БОЖИЯ МОСТ</option>';
+            NAME_BG_options_str  += '<option value="БРАШЛЯНА">БРАШЛЯНА</option>';
+            NAME_BG_options_str  += '<option value="БФС-4612">БФС-4612</option>';
+            NAME_BG_options_str  += '<option value="БЪЛХАРНИКА-2">БЪЛХАРНИКА-2</option>';
+            NAME_BG_options_str  += '<option value="БЪНДЕРИЦА">БЪНДЕРИЦА</option>';
+            NAME_BG_options_str  += '<option value="БЪЧВАТА">БЪЧВАТА</option>';
+            NAME_BG_options_str  += '<option value="БЯЛАТА ВОДА">БЯЛАТА ВОДА</option>';
+            NAME_BG_options_str  += '<option value="Баба яга">Баба яга</option>';
+            NAME_BG_options_str  += '<option value="Бабата">Бабата</option>';
+            NAME_BG_options_str  += '<option value="Бабината пършивка">Бабината пършивка</option>';
+            NAME_BG_options_str  += '<option value="Бабките">Бабките</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 14">Байови дупки  № 14</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 18">Байови дупки  № 18</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 2">Байови дупки  № 2</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 29">Байови дупки  № 29</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 3">Байови дупки  № 3</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 33">Байови дупки  № 33</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 4">Байови дупки  № 4</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 5">Байови дупки  № 5</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 8">Байови дупки  № 8</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  № 9">Байови дупки  № 9</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки  №11 -">Байови дупки  №11 -</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки № 17">Байови дупки № 17</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки № 6">Байови дупки № 6</option>';
+            NAME_BG_options_str  += '<option value="Байови дупки №7">Байови дупки №7</option>';
+            NAME_BG_options_str  += '<option value="Байренов въртоп">Байренов въртоп</option>';
+            NAME_BG_options_str  += '<option value="Балтата">Балтата</option>';
+            NAME_BG_options_str  += '<option value="Бамбаловата">Бамбаловата</option>';
+            NAME_BG_options_str  += '<option value="Бански  суходол № 68">Бански  суходол № 68</option>';
+            NAME_BG_options_str  += '<option value="Бански  суходол №22">Бански  суходол №22</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол  № 1">Бански суходол  № 1</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол  № 18">Бански суходол  № 18</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол  №16">Бански суходол  №16</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол  №33">Бански суходол  №33</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол  №38">Бански суходол  №38</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол  №6">Бански суходол  №6</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 2">Бански суходол № 2</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 28">Бански суходол № 28</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 3">Бански суходол № 3</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 39">Бански суходол № 39</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 4">Бански суходол № 4</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 5">Бански суходол № 5</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 50">Бански суходол № 50</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол № 70">Бански суходол № 70</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №12">Бански суходол №12</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №13">Бански суходол №13</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №14">Бански суходол №14</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №15">Бански суходол №15</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №17">Бански суходол №17</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №19">Бански суходол №19</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №20">Бански суходол №20</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №23">Бански суходол №23</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №24">Бански суходол №24</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №24a">Бански суходол №24a</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №25">Бански суходол №25</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №26">Бански суходол №26</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №27">Бански суходол №27</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №29">Бански суходол №29</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №31">Бански суходол №31</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №34">Бански суходол №34</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №35">Бански суходол №35</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №36">Бански суходол №36</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №40">Бански суходол №40</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №41">Бански суходол №41</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №45 А-Б">Бански суходол №45 А-Б</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №46">Бански суходол №46</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №51">Бански суходол №51</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №66">Бански суходол №66</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №7">Бански суходол №7</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №71">Бански суходол №71</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол №8">Бански суходол №8</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол, система №10-№10А">Бански суходол, система №10-№10А</option>';
+            NAME_BG_options_str  += '<option value="Бански суходол, система №9-№11">Бански суходол, система №9-№11</option>';
+            NAME_BG_options_str  += '<option value="Барки 14">Барки 14</option>';
+            NAME_BG_options_str  += '<option value="Барки 20">Барки 20</option>';
+            NAME_BG_options_str  += '<option value="Барки 21">Барки 21</option>';
+            NAME_BG_options_str  += '<option value="Барки 8">Барки 8</option>';
+            NAME_BG_options_str  += '<option value="Баюви  дупки  № 1">Баюви  дупки  № 1</option>';
+            NAME_BG_options_str  += '<option value="Бежанска (Драговска) пещера">Бежанска (Драговска) пещера</option>';
+            NAME_BG_options_str  += '<option value="Бездънния пчелин">Бездънния пчелин</option>';
+            NAME_BG_options_str  += '<option value="Безименна 4">Безименна 4</option>';
+            NAME_BG_options_str  += '<option value="Белата дупка">Белата дупка</option>';
+            NAME_BG_options_str  += '<option value="Белите езера">Белите езера</option>';
+            NAME_BG_options_str  += '<option value="Белушка">Белушка</option>';
+            NAME_BG_options_str  += '<option value="Бивака">Бивака</option>';
+            NAME_BG_options_str  += '<option value="Билибюшовата дупка">Билибюшовата дупка</option>';
+            NAME_BG_options_str  += '<option value="Билина дупка">Билина дупка</option>';
+            NAME_BG_options_str  += '<option value="Бисерна">Бисерна</option>';
+            NAME_BG_options_str  += '<option value="Близката дупка">Близката дупка</option>';
+            NAME_BG_options_str  += '<option value="Блокажната цепка">Блокажната цепка</option>';
+            NAME_BG_options_str  += '<option value="Божурица">Божурица</option>';
+            NAME_BG_options_str  += '<option value="Бозките">Бозките</option>';
+            NAME_BG_options_str  += '<option value="Бойкина дупка">Бойкина дупка</option>';
+            NAME_BG_options_str  += '<option value="Боклучарника">Боклучарника</option>';
+            NAME_BG_options_str  += '<option value="Бориковска пещера">Бориковска пещера</option>';
+            NAME_BG_options_str  += '<option value="Борима-1">Борима-1</option>';
+            NAME_BG_options_str  += '<option value="Борима-2">Борима-2</option>';
+            NAME_BG_options_str  += '<option value="Борима-3">Борима-3</option>';
+            NAME_BG_options_str  += '<option value="Борима-4">Борима-4</option>';
+            NAME_BG_options_str  += '<option value="Боркова дупка">Боркова дупка</option>';
+            NAME_BG_options_str  += '<option value="Борова дупка">Борова дупка</option>';
+            NAME_BG_options_str  += '<option value="Боско">Боско</option>';
+            NAME_BG_options_str  += '<option value="Боци-1">Боци-1</option>';
+            NAME_BG_options_str  += '<option value="Бошкова дупка">Бошкова дупка</option>';
+            NAME_BG_options_str  += '<option value="Бранкова дупка">Бранкова дупка</option>';
+            NAME_BG_options_str  += '<option value="Братанова пещера">Братанова пещера</option>';
+            NAME_BG_options_str  += '<option value="Брънчо валог">Брънчо валог</option>';
+            NAME_BG_options_str  += '<option value="Бръшляновата">Бръшляновата</option>';
+            NAME_BG_options_str  += '<option value="Буката">Буката</option>';
+            NAME_BG_options_str  += '<option value="Булина дупка">Булина дупка</option>';
+            NAME_BG_options_str  += '<option value="Булото">Булото</option>';
+            NAME_BG_options_str  += '<option value="Буняко">Буняко</option>';
+            NAME_BG_options_str  += '<option value="Бучащия процеп">Бучащия процеп</option>';
+            NAME_BG_options_str  += '<option value="Бълхарка">Бълхарка</option>';
+            NAME_BG_options_str  += '<option value="Бълхарника – 1">Бълхарника – 1</option>';
+            NAME_BG_options_str  += '<option value="Бързибоговата пещера">Бързибоговата пещера</option>';
+            NAME_BG_options_str  += '<option value="Бърлогата">Бърлогата</option>';
+            NAME_BG_options_str  += '<option value="Бяла река">Бяла река</option>';
+            NAME_BG_options_str  += '<option value="Бялата дупка">Бялата дупка</option>';
+            NAME_BG_options_str  += '<option value="ВАЛОВСКА 2">ВАЛОВСКА 2</option>';
+            NAME_BG_options_str  += '<option value="ВАЛОВСКИ 1">ВАЛОВСКИ 1</option>';
+            NAME_BG_options_str  += '<option value="ВЕНЕЦА">ВЕНЕЦА</option>';
+            NAME_BG_options_str  += '<option value="ВИСОКАТА">ВИСОКАТА</option>';
+            NAME_BG_options_str  += '<option value="ВОДНАТА ПЕЩЕРА">ВОДНАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ВОДНАТА ПЕЩЕРА (ЮЛЕН ИРЕ)">ВОДНАТА ПЕЩЕРА (ЮЛЕН ИРЕ)</option>';
+            NAME_BG_options_str  += '<option value="ВОДНАТА ПЕЩЕРА БУЧИН ПРОХОД">ВОДНАТА ПЕЩЕРА БУЧИН ПРОХОД</option>';
+            NAME_BG_options_str  += '<option value="ВОДНАТА ПРОПАСТ КАМЕННО ПОЛЕ ДО ПЪТЯ">ВОДНАТА ПРОПАСТ КАМЕННО ПОЛЕ ДО ПЪТЯ</option>';
+            NAME_BG_options_str  += '<option value="ВОДОПАДИТЕ">ВОДОПАДИТЕ</option>';
+            NAME_BG_options_str  += '<option value="ВОЕВОДСКАТА ПЕЩЕРА">ВОЕВОДСКАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ВОЛСКАТА">ВОЛСКАТА</option>';
+            NAME_BG_options_str  += '<option value="Варовитец">Варовитец</option>';
+            NAME_BG_options_str  += '<option value="Варта">Варта</option>';
+            NAME_BG_options_str  += '<option value="Васильова дупка">Васильова дупка</option>';
+            NAME_BG_options_str  += '<option value="Велкова дупка">Велкова дупка</option>';
+            NAME_BG_options_str  += '<option value="Венеца">Венеца</option>';
+            NAME_BG_options_str  += '<option value="Верандата">Верандата</option>';
+            NAME_BG_options_str  += '<option value="Весова яма">Весова яма</option>';
+            NAME_BG_options_str  += '<option value="Ветеранската пропаст">Ветеранската пропаст</option>';
+            NAME_BG_options_str  += '<option value="Виденица">Виденица</option>';
+            NAME_BG_options_str  += '<option value="Вишньова градина">Вишньова градина</option>';
+            NAME_BG_options_str  += '<option value="Влайне 1">Влайне 1</option>';
+            NAME_BG_options_str  += '<option value="Влайне-5">Влайне-5</option>';
+            NAME_BG_options_str  += '<option value="Влайне-6">Влайне-6</option>';
+            NAME_BG_options_str  += '<option value="Водната">Водната</option>';
+            NAME_BG_options_str  += '<option value="Водната пещера">Водната пещера</option>';
+            NAME_BG_options_str  += '<option value="Водница">Водница</option>';
+            NAME_BG_options_str  += '<option value="Водопада">Водопада</option>';
+            NAME_BG_options_str  += '<option value="Водопада 2">Водопада 2</option>';
+            NAME_BG_options_str  += '<option value="Вр.Соколец">Вр.Соколец</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 1">Вражи дупки 1</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 10">Вражи дупки 10</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 11">Вражи дупки 11</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 12">Вражи дупки 12</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 13">Вражи дупки 13</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 14">Вражи дупки 14</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 15">Вражи дупки 15</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 16">Вражи дупки 16</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 17">Вражи дупки 17</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 18">Вражи дупки 18</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 2">Вражи дупки 2</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 3">Вражи дупки 3</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 4">Вражи дупки 4</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 5">Вражи дупки 5</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 6">Вражи дупки 6</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 7">Вражи дупки 7</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 8">Вражи дупки 8</option>';
+            NAME_BG_options_str  += '<option value="Вражи дупки 9">Вражи дупки 9</option>';
+            NAME_BG_options_str  += '<option value="Враня дупка">Враня дупка</option>';
+            NAME_BG_options_str  += '<option value="Врелото в селото">Врелото в селото</option>';
+            NAME_BG_options_str  += '<option value="Врелцето">Врелцето</option>';
+            NAME_BG_options_str  += '<option value="Врях дупка">Врях дупка</option>';
+            NAME_BG_options_str  += '<option value="Втори вход на ППД">Втори вход на ППД</option>';
+            NAME_BG_options_str  += '<option value="Втори вход на Пещ.Бачо Киро">Втори вход на Пещ.Бачо Киро</option>';
+            NAME_BG_options_str  += '<option value="Вълчата дупка">Вълчата дупка</option>';
+            NAME_BG_options_str  += '<option value="Вълчата пещера">Вълчата пещера</option>';
+            NAME_BG_options_str  += '<option value="Вървището">Вървището</option>';
+            NAME_BG_options_str  += '<option value="Въртешката">Въртешката</option>';
+            NAME_BG_options_str  += '<option value="Въртешката пещера">Въртешката пещера</option>';
+            NAME_BG_options_str  += '<option value="Въртоп № 1">Въртоп № 1</option>';
+            NAME_BG_options_str  += '<option value="Въртопа">Въртопа</option>';
+            NAME_BG_options_str  += '<option value="Въшавата дупка">Въшавата дупка</option>';
+            NAME_BG_options_str  += '<option value="ГАЛАБАРНИКА">ГАЛАБАРНИКА</option>';
+            NAME_BG_options_str  += '<option value="ГИНИНАТА ПЕЩЕРА">ГИНИНАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ГЛОЖАВИ ЯМИ 1">ГЛОЖАВИ ЯМИ 1</option>';
+            NAME_BG_options_str  += '<option value="ГНИЛОЦА">ГНИЛОЦА</option>';
+            NAME_BG_options_str  += '<option value="ГОВЕДАРНИКА">ГОВЕДАРНИКА</option>';
+            NAME_BG_options_str  += '<option value="ГОЛАШКА ПЕЩЕРА">ГОЛАШКА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ГОЛЯМА БАЛАБАНОВА">ГОЛЯМА БАЛАБАНОВА</option>';
+            NAME_BG_options_str  += '<option value="ГОЛЯМАТА ВОДА">ГОЛЯМАТА ВОДА</option>';
+            NAME_BG_options_str  += '<option value="ГОЛЯМАТА ЛЕДНИЦА">ГОЛЯМАТА ЛЕДНИЦА</option>';
+            NAME_BG_options_str  += '<option value="ГОЛЯМАТА МААРАТА">ГОЛЯМАТА МААРАТА</option>';
+            NAME_BG_options_str  += '<option value="ГОЛЯМАТА НИША">ГОЛЯМАТА НИША</option>';
+            NAME_BG_options_str  += '<option value="ГОЛЯМОТО СИГУЛАРО">ГОЛЯМОТО СИГУЛАРО</option>';
+            NAME_BG_options_str  += '<option value="ГОРНА И ДОЛНА КОПЛАДЖА">ГОРНА И ДОЛНА КОПЛАДЖА</option>';
+            NAME_BG_options_str  += '<option value="ГОРНИКА - 07">ГОРНИКА - 07</option>';
+            NAME_BG_options_str  += '<option value="ГРАМАДИЦА - 072">ГРАМАДИЦА - 072</option>';
+            NAME_BG_options_str  += '<option value="ГРАНОВА ДУПКА">ГРАНОВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ГРИМНИНА ДУПКА">ГРИМНИНА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 1 СУХАЯ  ПЕЩЕРА">ГУБИЛИЩЕ 1 СУХАЯ  ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 2 СУХАЯ">ГУБИЛИЩЕ 2 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 3 СУХАЯ">ГУБИЛИЩЕ 3 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 4 СУХАЯ">ГУБИЛИЩЕ 4 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 5 СУХАЯ">ГУБИЛИЩЕ 5 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 6 СУХАЯ">ГУБИЛИЩЕ 6 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 7 СУХАЯ">ГУБИЛИЩЕ 7 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 8 СУХАЯ">ГУБИЛИЩЕ 8 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ 9 СУХАЯ">ГУБИЛИЩЕ 9 СУХАЯ</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ ЧЕРНА 2">ГУБИЛИЩЕ ЧЕРНА 2</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ ЧЕРНА 3">ГУБИЛИЩЕ ЧЕРНА 3</option>';
+            NAME_BG_options_str  += '<option value="ГУБИЛИЩЕ ЧЕРНА 4">ГУБИЛИЩЕ ЧЕРНА 4</option>';
+            NAME_BG_options_str  += '<option value="ГЪЛЪБАРНИКА">ГЪЛЪБАРНИКА</option>';
+            NAME_BG_options_str  += '<option value="ГЯУРПЕЩЕРА">ГЯУРПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="Габатек">Габатек</option>';
+            NAME_BG_options_str  += '<option value="Газова?">Газова?</option>';
+            NAME_BG_options_str  += '<option value="Ганчова пропаст">Ганчова пропаст</option>';
+            NAME_BG_options_str  += '<option value="Гарванец">Гарванец</option>';
+            NAME_BG_options_str  += '<option value="Гарваница">Гарваница</option>';
+            NAME_BG_options_str  += '<option value="Гарваница 1">Гарваница 1</option>';
+            NAME_BG_options_str  += '<option value="Гарваница 2">Гарваница 2</option>';
+            NAME_BG_options_str  += '<option value="Гаргина дупка">Гаргина дупка</option>';
+            NAME_BG_options_str  += '<option value="Гемиджии пещере">Гемиджии пещере</option>';
+            NAME_BG_options_str  += '<option value="Генчова дупка">Генчова дупка</option>';
+            NAME_BG_options_str  += '<option value="Герана">Герана</option>';
+            NAME_BG_options_str  += '<option value="Геранчето">Геранчето</option>';
+            NAME_BG_options_str  += '<option value="Гивалака">Гивалака</option>';
+            NAME_BG_options_str  += '<option value="Главова дупка">Главова дупка</option>';
+            NAME_BG_options_str  += '<option value="Глинената ?">Глинената ?</option>';
+            NAME_BG_options_str  += '<option value="Глинестата">Глинестата</option>';
+            NAME_BG_options_str  += '<option value="Глога">Глога</option>';
+            NAME_BG_options_str  += '<option value="Говнуша">Говнуша</option>';
+            NAME_BG_options_str  += '<option value="Говорът на водата">Говорът на водата</option>';
+            NAME_BG_options_str  += '<option value="Гогова дупка">Гогова дупка</option>';
+            NAME_BG_options_str  += '<option value="Гогова дупка 2">Гогова дупка 2</option>';
+            NAME_BG_options_str  += '<option value="Големата Темнота">Големата Темнота</option>';
+            NAME_BG_options_str  += '<option value="Големата дупка">Големата дупка</option>';
+            NAME_BG_options_str  += '<option value="Голобоица">Голобоица</option>';
+            NAME_BG_options_str  += '<option value="Голобоица 1 и 2">Голобоица 1 и 2</option>';
+            NAME_BG_options_str  += '<option value="Голяма гарваница">Голяма гарваница</option>';
+            NAME_BG_options_str  += '<option value="Голямата Микренска">Голямата Микренска</option>';
+            NAME_BG_options_str  += '<option value="Голямата меча дупка">Голямата меча дупка</option>';
+            NAME_BG_options_str  += '<option value="Голямата ниша">Голямата ниша</option>';
+            NAME_BG_options_str  += '<option value="Голямата пещ">Голямата пещ</option>';
+            NAME_BG_options_str  += '<option value="Голямата пещера">Голямата пещера</option>';
+            NAME_BG_options_str  += '<option value="Голямата яма">Голямата яма</option>';
+            NAME_BG_options_str  += '<option value="Голямата яма – 3">Голямата яма – 3</option>';
+            NAME_BG_options_str  += '<option value="Горна Каранска пещера">Горна Каранска пещера</option>';
+            NAME_BG_options_str  += '<option value="Горната">Горната</option>';
+            NAME_BG_options_str  += '<option value="Горни Раж 1">Горни Раж 1</option>';
+            NAME_BG_options_str  += '<option value="Горни Раж 2">Горни Раж 2</option>';
+            NAME_BG_options_str  += '<option value="Горното бранище">Горното бранище</option>';
+            NAME_BG_options_str  += '<option value="Горунака">Горунака</option>';
+            NAME_BG_options_str  += '<option value="Гоцева дупка">Гоцева дупка</option>';
+            NAME_BG_options_str  += '<option value="Граденец I-ва">Граденец I-ва</option>';
+            NAME_BG_options_str  += '<option value="Граденец II-ра">Граденец II-ра</option>';
+            NAME_BG_options_str  += '<option value="Грамадата">Грамадата</option>';
+            NAME_BG_options_str  += '<option value="Граматорица">Граматорица</option>';
+            NAME_BG_options_str  += '<option value="Граничарската пещера">Граничарската пещера</option>';
+            NAME_BG_options_str  += '<option value="Гребенарската пропаст">Гребенарската пропаст</option>';
+            NAME_BG_options_str  += '<option value="Грешната дупка">Грешната дупка</option>';
+            NAME_BG_options_str  += '<option value="Гробище">Гробище</option>';
+            NAME_BG_options_str  += '<option value="Гръмова дупка">Гръмова дупка</option>';
+            NAME_BG_options_str  += '<option value="Губилището">Губилището</option>';
+            NAME_BG_options_str  += '<option value="Гъбарника">Гъбарника</option>';
+            NAME_BG_options_str  += '<option value="Гъбките">Гъбките</option>';
+            NAME_BG_options_str  += '<option value="Гълабарника">Гълабарника</option>';
+            NAME_BG_options_str  += '<option value="Гълъбарника">Гълъбарника</option>';
+            NAME_BG_options_str  += '<option value="Гълъбица пещера">Гълъбица пещера</option>';
+            NAME_BG_options_str  += '<option value="Гърлото">Гърлото</option>';
+            NAME_BG_options_str  += '<option value="Гърмяната">Гърмяната</option>';
+            NAME_BG_options_str  += '<option value="Гюверджин ин">Гюверджин ин</option>';
+            NAME_BG_options_str  += '<option value="ДАКСА">ДАКСА</option>';
+            NAME_BG_options_str  += '<option value="ДАШОВСКИ ЛЪК">ДАШОВСКИ ЛЪК</option>';
+            NAME_BG_options_str  += '<option value="ДЕВЕТАШКА">ДЕВЕТАШКА</option>';
+            NAME_BG_options_str  += '<option value="ДЕНДРИТНА">ДЕНДРИТНА</option>';
+            NAME_BG_options_str  += '<option value="ДЕРВЕНТСКАТА ПЕЩЕРА">ДЕРВЕНТСКАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ДИНЕВА ПЕЩ">ДИНЕВА ПЕЩ</option>';
+            NAME_BG_options_str  += '<option value="ДОЛНА МААЗА">ДОЛНА МААЗА</option>';
+            NAME_BG_options_str  += '<option value="ДРАГАНДЖОВА">ДРАГАНДЖОВА</option>';
+            NAME_BG_options_str  += '<option value="ДРАГИЧЕНА ДУПКА (S-44)">ДРАГИЧЕНА ДУПКА (S-44)</option>';
+            NAME_BG_options_str  += '<option value="ДРАШАНСКАТА  ПЕЩЕРА">ДРАШАНСКАТА  ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ДРЯНОВСКА ПЕЩЕРА">ДРЯНОВСКА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ДУДИН ВЪРТОП (S-35)">ДУДИН ВЪРТОП (S-35)</option>';
+            NAME_BG_options_str  += '<option value="ДУДИН ВЪРТОП 2 (S-36)|">ДУДИН ВЪРТОП 2 (S-36)|</option>';
+            NAME_BG_options_str  += '<option value="ДУНЧОВЕЦ">ДУНЧОВЕЦ</option>';
+            NAME_BG_options_str  += '<option value="ДУПКАТА">ДУПКАТА</option>';
+            NAME_BG_options_str  += '<option value="ДУХАЩАТА ПРОПАСТ">ДУХАЩАТА ПРОПАСТ</option>';
+            NAME_BG_options_str  += '<option value="ДУХЛОТО">ДУХЛОТО</option>';
+            NAME_BG_options_str  += '<option value="ДУШАНИЦА">ДУШАНИЦА</option>';
+            NAME_BG_options_str  += '<option value="ДУШНИКА">ДУШНИКА</option>';
+            NAME_BG_options_str  += '<option value="ДЪЛБОКАТА">ДЪЛБОКАТА</option>';
+            NAME_BG_options_str  += '<option value="Данчова дупка">Данчова дупка</option>';
+            NAME_BG_options_str  += '<option value="Двадесет години СПК “Академик"">Двадесет години СПК “Академик"</option>';
+            NAME_BG_options_str  += '<option value="Двете коминчета">Двете коминчета</option>';
+            NAME_BG_options_str  += '<option value="Двуетажната">Двуетажната</option>';
+            NAME_BG_options_str  += '<option value="Деветашката пещера">Деветашката пещера</option>';
+            NAME_BG_options_str  += '<option value="Делянова дупка">Делянова дупка</option>';
+            NAME_BG_options_str  += '<option value="Дендритна">Дендритна</option>';
+            NAME_BG_options_str  += '<option value="Дендритната">Дендритната</option>';
+            NAME_BG_options_str  += '<option value="Дендритната пропаст">Дендритната пропаст</option>';
+            NAME_BG_options_str  += '<option value="Десни Шупли камък">Десни Шупли камък</option>';
+            NAME_BG_options_str  += '<option value="Джебин трап">Джебин трап</option>';
+            NAME_BG_options_str  += '<option value="Джераница">Джераница</option>';
+            NAME_BG_options_str  += '<option value="Джин дупка">Джин дупка</option>';
+            NAME_BG_options_str  += '<option value="Джурая дупка">Джурая дупка</option>';
+            NAME_BG_options_str  += '<option value="Джурковската пещера">Джурковската пещера</option>';
+            NAME_BG_options_str  += '<option value="Диаклазата">Диаклазата</option>';
+            NAME_BG_options_str  += '<option value="Дирека">Дирека</option>';
+            NAME_BG_options_str  += '<option value="Длъгата яма">Длъгата яма</option>';
+            NAME_BG_options_str  += '<option value="Доглазка">Доглазка</option>';
+            NAME_BG_options_str  += '<option value="Додалица">Додалица</option>';
+            NAME_BG_options_str  += '<option value="Додалица3">Додалица3</option>';
+            NAME_BG_options_str  += '<option value="Долна Каранска 2">Долна Каранска 2</option>';
+            NAME_BG_options_str  += '<option value="Долно синьо езеро">Долно синьо езеро</option>';
+            NAME_BG_options_str  += '<option value="Доплочка">Доплочка</option>';
+            NAME_BG_options_str  += '<option value="Дотрафка">Дотрафка</option>';
+            NAME_BG_options_str  += '<option value="Драганчовица – трети вход">Драганчовица – трети вход</option>';
+            NAME_BG_options_str  += '<option value="Драги камък">Драги камък</option>';
+            NAME_BG_options_str  += '<option value="Драгова дупка">Драгова дупка</option>';
+            NAME_BG_options_str  += '<option value="Драголова яма">Драголова яма</option>';
+            NAME_BG_options_str  += '<option value="Драката">Драката</option>';
+            NAME_BG_options_str  += '<option value="Дрангалешката пропаст">Дрангалешката пропаст</option>';
+            NAME_BG_options_str  += '<option value="Драндарска яма">Драндарска яма</option>';
+            NAME_BG_options_str  += '<option value="Драндарска-3">Драндарска-3</option>';
+            NAME_BG_options_str  += '<option value="Дренето">Дренето</option>';
+            NAME_BG_options_str  += '<option value="Дреновата дупка">Дреновата дупка</option>';
+            NAME_BG_options_str  += '<option value="Дружба">Дружба</option>';
+            NAME_BG_options_str  += '<option value="Дрънкална пропаст">Дрънкална пропаст</option>';
+            NAME_BG_options_str  += '<option value="Дрънчи дупка">Дрънчи дупка</option>';
+            NAME_BG_options_str  += '<option value="Дупката">Дупката</option>';
+            NAME_BG_options_str  += '<option value="Дупката до асфалта">Дупката до асфалта</option>';
+            NAME_BG_options_str  += '<option value="Дупката зад плочата">Дупката зад плочата</option>';
+            NAME_BG_options_str  += '<option value="Дупката на Марина ливада">Дупката на Марина ливада</option>';
+            NAME_BG_options_str  += '<option value="Дупката на ентусиастите">Дупката на ентусиастите</option>';
+            NAME_BG_options_str  += '<option value="Дупките">Дупките</option>';
+            NAME_BG_options_str  += '<option value="Духлата">Духлата</option>';
+            NAME_BG_options_str  += '<option value="Духлатата пещера">Духлатата пещера</option>';
+            NAME_BG_options_str  += '<option value="Дъбанова дупка I">Дъбанова дупка I</option>';
+            NAME_BG_options_str  += '<option value="Дъждовната">Дъждовната</option>';
+            NAME_BG_options_str  += '<option value="Дъждовника и Змиите">Дъждовника и Змиите</option>';
+            NAME_BG_options_str  += '<option value="Дяволицата">Дяволицата</option>';
+            NAME_BG_options_str  += '<option value="Дяволската дупка">Дяволската дупка</option>';
+            NAME_BG_options_str  += '<option value="Дяволското гърло">Дяволското гърло</option>';
+            NAME_BG_options_str  += '<option value="Дядо Делювата чешма">Дядо Делювата чешма</option>';
+            NAME_BG_options_str  += '<option value="Дядо Ивановата кошара">Дядо Ивановата кошара</option>';
+            NAME_BG_options_str  += '<option value="Дядо Куртеви пещери">Дядо Куртеви пещери</option>';
+            NAME_BG_options_str  += '<option value="Дядо Нейкова дупка">Дядо Нейкова дупка</option>';
+            NAME_BG_options_str  += '<option value="Дядова дупка">Дядова дупка</option>';
+            NAME_BG_options_str  += '<option value="ЕВКАЯ - КАМЕННАТА КЪЩА">ЕВКАЯ - КАМЕННАТА КЪЩА</option>';
+            NAME_BG_options_str  += '<option value="ЕЛЕНИНА ДУПКА">ЕЛЕНИНА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ЕМЕНСКА">ЕМЕНСКА</option>';
+            NAME_BG_options_str  += '<option value="ЕТРОПОЛЕ">ЕТРОПОЛЕ</option>';
+            NAME_BG_options_str  += '<option value="Евтимиевата пещера">Евтимиевата пещера</option>';
+            NAME_BG_options_str  += '<option value="Егюптен дупка">Егюптен дупка</option>';
+            NAME_BG_options_str  += '<option value="Еделвайс2">Еделвайс2</option>';
+            NAME_BG_options_str  += '<option value="Еделвайс3">Еделвайс3</option>';
+            NAME_BG_options_str  += '<option value="Езерото">Езерото</option>';
+            NAME_BG_options_str  += '<option value="Екиз-инлер - № 2">Екиз-инлер - № 2</option>';
+            NAME_BG_options_str  += '<option value="Екстрем">Екстрем</option>';
+            NAME_BG_options_str  += '<option value="Елата">Елата</option>';
+            NAME_BG_options_str  += '<option value="Еленчето">Еленчето</option>';
+            NAME_BG_options_str  += '<option value="Еменската">Еменската</option>';
+            NAME_BG_options_str  += '<option value="Еминова дупка">Еминова дупка</option>';
+            NAME_BG_options_str  += '<option value="Енчов въртоп">Енчов въртоп</option>';
+            NAME_BG_options_str  += '<option value="Ер кюприя">Ер кюприя</option>';
+            NAME_BG_options_str  += '<option value="Есовете">Есовете</option>';
+            NAME_BG_options_str  += '<option value="ЖЕБИН ТРАП">ЖЕБИН ТРАП</option>';
+            NAME_BG_options_str  += '<option value="ЖИВАТА ВОДА">ЖИВАТА ВОДА</option>';
+            NAME_BG_options_str  += '<option value="Жабешката">Жабешката</option>';
+            NAME_BG_options_str  += '<option value="Жабчето">Жабчето</option>';
+            NAME_BG_options_str  += '<option value="ЗАЛОСТЕНА">ЗАЛОСТЕНА</option>';
+            NAME_BG_options_str  += '<option value="ЗАЛЪМСКАТА">ЗАЛЪМСКАТА</option>';
+            NAME_BG_options_str  += '<option value="ЗМЕЕВАТА ДУПКА">ЗМЕЕВАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ЗМЕЕВИ ДУПКИ">ЗМЕЕВИ ДУПКИ</option>';
+            NAME_BG_options_str  += '<option value="ЗМЕЮВА ДУПКА">ЗМЕЮВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="Задънената яма">Задънената яма</option>';
+            NAME_BG_options_str  += '<option value="Задъненка 1">Задъненка 1</option>';
+            NAME_BG_options_str  += '<option value="Задъненка 2">Задъненка 2</option>';
+            NAME_BG_options_str  += '<option value="Заливната пещера">Заливната пещера</option>';
+            NAME_BG_options_str  += '<option value="Замуняците">Замуняците</option>';
+            NAME_BG_options_str  += '<option value="Зандана">Зандана</option>';
+            NAME_BG_options_str  += '<option value="Запетайката">Запетайката</option>';
+            NAME_BG_options_str  += '<option value="Затрупаната">Затрупаната</option>';
+            NAME_BG_options_str  += '<option value="Захлупена 1">Захлупена 1</option>';
+            NAME_BG_options_str  += '<option value="Захлупена 2">Захлупена 2</option>';
+            NAME_BG_options_str  += '<option value="Захлупена 4">Захлупена 4</option>';
+            NAME_BG_options_str  += '<option value="Захлупена 5">Захлупена 5</option>';
+            NAME_BG_options_str  += '<option value="Зверилника">Зверилника</option>';
+            NAME_BG_options_str  += '<option value="Здравеца">Здравеца</option>';
+            NAME_BG_options_str  += '<option value="Зеленинте камъни">Зеленинте камъни</option>';
+            NAME_BG_options_str  += '<option value="Зеленката">Зеленката</option>';
+            NAME_BG_options_str  += '<option value="Зиданка">Зиданка</option>';
+            NAME_BG_options_str  += '<option value="Зиданката – 4">Зиданката – 4</option>';
+            NAME_BG_options_str  += '<option value="Златановата">Златановата</option>';
+            NAME_BG_options_str  += '<option value="Златарската пещера">Златарската пещера</option>';
+            NAME_BG_options_str  += '<option value="Зли въртеж">Зли въртеж</option>';
+            NAME_BG_options_str  += '<option value="Злото биле">Злото биле</option>';
+            NAME_BG_options_str  += '<option value="Змеина дупка">Змеина дупка</option>';
+            NAME_BG_options_str  += '<option value="Змейова дупка">Змейова дупка</option>';
+            NAME_BG_options_str  += '<option value="Змейовата дупка">Змейовата дупка</option>';
+            NAME_BG_options_str  += '<option value="Змийската пещера">Змийската пещера</option>';
+            NAME_BG_options_str  += '<option value="Змийчето">Змийчето</option>';
+            NAME_BG_options_str  += '<option value="Змията">Змията</option>';
+            NAME_BG_options_str  += '<option value="Зоровица">Зоровица</option>';
+            NAME_BG_options_str  += '<option value="Зъбатата">Зъбатата</option>';
+            NAME_BG_options_str  += '<option value="Зърньова дупка">Зърньова дупка</option>';
+            NAME_BG_options_str  += '<option value="ИВАЙЛОВА ДУПКА">ИВАЙЛОВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ИВАНОВА ВОДА">ИВАНОВА ВОДА</option>';
+            NAME_BG_options_str  += '<option value="ИМАНЕТО">ИМАНЕТО</option>';
+            NAME_BG_options_str  += '<option value="Ибишова дупка">Ибишова дупка</option>';
+            NAME_BG_options_str  += '<option value="Извора">Извора</option>';
+            NAME_BG_options_str  += '<option value="Изворна">Изворна</option>';
+            NAME_BG_options_str  += '<option value="Изсипаната">Изсипаната</option>';
+            NAME_BG_options_str  += '<option value="Изумрудената пещера">Изумрудената пещера</option>';
+            NAME_BG_options_str  += '<option value="Ильова дупка">Ильова дупка</option>';
+            NAME_BG_options_str  += '<option value="Имам кая">Имам кая</option>';
+            NAME_BG_options_str  += '<option value="Иманярска пропаст">Иманярска пропаст</option>';
+            NAME_BG_options_str  += '<option value="Иманярската">Иманярската</option>';
+            NAME_BG_options_str  += '<option value="Иманярската (под Дома)">Иманярската (под Дома)</option>';
+            NAME_BG_options_str  += '<option value="Иманярската пропаст">Иманярската пропаст</option>';
+            NAME_BG_options_str  += '<option value="ЙОНКО">ЙОНКО</option>';
+            NAME_BG_options_str  += '<option value="Йончова дупка">Йончова дупка</option>';
+            NAME_BG_options_str  += '<option value="Йосова яма">Йосова яма</option>';
+            NAME_BG_options_str  += '<option value="КАЗАНА (ВИХРЕНСКАТА)">КАЗАНА (ВИХРЕНСКАТА)</option>';
+            NAME_BG_options_str  += '<option value="КАЛОЯН">КАЛОЯН</option>';
+            NAME_BG_options_str  += '<option value="КАМБАНКИТЕ">КАМБАНКИТЕ</option>';
+            NAME_BG_options_str  += '<option value="КАНЬОНА">КАНЬОНА</option>';
+            NAME_BG_options_str  += '<option value="КЕНОВА ДУПКА">КЕНОВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="КЕНОВА КОМ">КЕНОВА КОМ</option>';
+            NAME_BG_options_str  += '<option value="ККС">ККС</option>';
+            NAME_BG_options_str  += '<option value="КЛАДЕНЕЦА">КЛАДЕНЕЦА</option>';
+            NAME_BG_options_str  += '<option value="КЛЕНОВ ВЪРТОП">КЛЕНОВ ВЪРТОП</option>';
+            NAME_BG_options_str  += '<option value="КОВАН КАЯ">КОВАН КАЯ</option>';
+            NAME_BG_options_str  += '<option value="КОМИТСКИ ДУПКИ  М. БЪРДОТО">КОМИТСКИ ДУПКИ  М. БЪРДОТО</option>';
+            NAME_BG_options_str  += '<option value="КОНСКИ ДУПКИ">КОНСКИ ДУПКИ</option>';
+            NAME_BG_options_str  += '<option value="КОНСКИ ДУПКИ -076">КОНСКИ ДУПКИ -076</option>';
+            NAME_BG_options_str  += '<option value="КОНУСЧЕТО">КОНУСЧЕТО</option>';
+            NAME_BG_options_str  += '<option value="КОПАНАТА">КОПАНАТА</option>';
+            NAME_BG_options_str  += '<option value="КОТА ПТ53 ДОКСА">КОТА ПТ53 ДОКСА</option>';
+            NAME_BG_options_str  += '<option value="КРАИЩЕТО">КРАИЩЕТО</option>';
+            NAME_BG_options_str  += '<option value="КРИВАТА ПЕЩ">КРИВАТА ПЕЩ</option>';
+            NAME_BG_options_str  += '<option value="КРИСТАЛНА">КРИСТАЛНА</option>';
+            NAME_BG_options_str  += '<option value="КРЬСТАТА ЯМА">КРЬСТАТА ЯМА</option>';
+            NAME_BG_options_str  += '<option value="КУКУЛЕВЕЦ">КУКУЛЕВЕЦ</option>';
+            NAME_BG_options_str  += '<option value="КУМАНИЦА">КУМАНИЦА</option>';
+            NAME_BG_options_str  += '<option value="КУРБАНИЦА -БЕЗИМЕННА 136">КУРБАНИЦА -БЕЗИМЕННА 136</option>';
+            NAME_BG_options_str  += '<option value="КУШ КАЯ">КУШ КАЯ</option>';
+            NAME_BG_options_str  += '<option value="КЪРВАВАТА ЛОКВА">КЪРВАВАТА ЛОКВА</option>';
+            NAME_BG_options_str  += '<option value="КЪСАТА ДУПКА">КЪСАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="Казанката">Казанката</option>';
+            NAME_BG_options_str  += '<option value="Калето">Калето</option>';
+            NAME_BG_options_str  += '<option value="Калеца">Калеца</option>';
+            NAME_BG_options_str  += '<option value="Калинина дупка">Калинина дупка</option>';
+            NAME_BG_options_str  += '<option value="Калинина1">Калинина1</option>';
+            NAME_BG_options_str  += '<option value="Калната пропаст">Калната пропаст</option>';
+            NAME_BG_options_str  += '<option value="Калугерската пещера">Калугерската пещера</option>';
+            NAME_BG_options_str  += '<option value="Калчова дупка - 1">Калчова дупка - 1</option>';
+            NAME_BG_options_str  += '<option value="Калчова дупка - 2">Калчова дупка - 2</option>';
+            NAME_BG_options_str  += '<option value="Калчова дупка - 3">Калчова дупка - 3</option>';
+            NAME_BG_options_str  += '<option value="Камбанката">Камбанката</option>';
+            NAME_BG_options_str  += '<option value="Камбанките">Камбанките</option>';
+            NAME_BG_options_str  += '<option value="Каменатица  № 40">Каменатица  № 40</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  N 38">Каменитица  N 38</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 1">Каменитица  № 1</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 12">Каменитица  № 12</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 17">Каменитица  № 17</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 18">Каменитица  № 18</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 19">Каменитица  № 19</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 2">Каменитица  № 2</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 20">Каменитица  № 20</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 21">Каменитица  № 21</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 22">Каменитица  № 22</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 24">Каменитица  № 24</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 25">Каменитица  № 25</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 27">Каменитица  № 27</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 28">Каменитица  № 28</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 3">Каменитица  № 3</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 30">Каменитица  № 30</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 31">Каменитица  № 31</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 32">Каменитица  № 32</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 33">Каменитица  № 33</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 34">Каменитица  № 34</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 35">Каменитица  № 35</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 36">Каменитица  № 36</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 39">Каменитица  № 39</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 4">Каменитица  № 4</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 42">Каменитица  № 42</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 5">Каменитица  № 5</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 6">Каменитица  № 6</option>';
+            NAME_BG_options_str  += '<option value="Каменитица  № 7">Каменитица  № 7</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 10">Каменитица № 10</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 11">Каменитица № 11</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 13">Каменитица № 13</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 14">Каменитица № 14</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 15">Каменитица № 15</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 16">Каменитица № 16</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 23">Каменитица № 23</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 26">Каменитица № 26</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 29">Каменитица № 29</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 8">Каменитица № 8</option>';
+            NAME_BG_options_str  += '<option value="Каменитица № 9">Каменитица № 9</option>';
+            NAME_BG_options_str  += '<option value="Камината">Камината</option>';
+            NAME_BG_options_str  += '<option value="Камината 1">Камината 1</option>';
+            NAME_BG_options_str  += '<option value="Камината 2">Камината 2</option>';
+            NAME_BG_options_str  += '<option value="Капитан Немо">Капитан Немо</option>';
+            NAME_BG_options_str  += '<option value="Капитанова дупка">Капитанова дупка</option>';
+            NAME_BG_options_str  += '<option value="Караджа инлер - I u II">Караджа инлер - I u II</option>';
+            NAME_BG_options_str  += '<option value="Карангин">Карангин</option>';
+            NAME_BG_options_str  += '<option value="Кариерата">Кариерата</option>';
+            NAME_BG_options_str  += '<option value="Карната дупка">Карната дупка</option>';
+            NAME_BG_options_str  += '<option value="Карната дупчица">Карната дупчица</option>';
+            NAME_BG_options_str  += '<option value="Карната пещера">Карната пещера</option>';
+            NAME_BG_options_str  += '<option value="Карстов извор Жабокрек">Карстов извор Жабокрек</option>';
+            NAME_BG_options_str  += '<option value="Карстов извор и Лисчата пещера">Карстов извор и Лисчата пещера</option>';
+            NAME_BG_options_str  += '<option value="Картал чешма">Картал чешма</option>';
+            NAME_BG_options_str  += '<option value="Каскадките">Каскадките</option>';
+            NAME_BG_options_str  += '<option value="Каскадна">Каскадна</option>';
+            NAME_BG_options_str  += '<option value="Катърската пещера">Катърската пещера</option>';
+            NAME_BG_options_str  += '<option value="Катя">Катя</option>';
+            NAME_BG_options_str  += '<option value="Каците">Каците</option>';
+            NAME_BG_options_str  += '<option value="Кенина (Кенова) дупка">Кенина (Кенова) дупка</option>';
+            NAME_BG_options_str  += '<option value="Киров въртоп">Киров въртоп</option>';
+            NAME_BG_options_str  += '<option value="Кировата">Кировата</option>';
+            NAME_BG_options_str  += '<option value="Кичика">Кичика</option>';
+            NAME_BG_options_str  += '<option value="Кладенчето">Кладенчето</option>';
+            NAME_BG_options_str  += '<option value="Кобилина дупка">Кобилина дупка</option>';
+            NAME_BG_options_str  += '<option value="Кован кая  (Пчелна скала)">Кован кая  (Пчелна скала)</option>';
+            NAME_BG_options_str  += '<option value="Козарската пещера">Козарската пещера</option>';
+            NAME_BG_options_str  += '<option value="Кози трап">Кози трап</option>';
+            NAME_BG_options_str  += '<option value="Козята пещера - №218">Козята пещера - №218</option>';
+            NAME_BG_options_str  += '<option value="Коленарова дупка">Коленарова дупка</option>';
+            NAME_BG_options_str  += '<option value="Колибището">Колибището</option>';
+            NAME_BG_options_str  += '<option value="Колкина дупка">Колкина дупка</option>';
+            NAME_BG_options_str  += '<option value="Комарица">Комарица</option>';
+            NAME_BG_options_str  += '<option value="Комболката">Комболката</option>';
+            NAME_BG_options_str  += '<option value="Конорска дупка">Конорска дупка</option>';
+            NAME_BG_options_str  += '<option value="Контрабаса">Контрабаса</option>';
+            NAME_BG_options_str  += '<option value="Конярнико">Конярнико</option>';
+            NAME_BG_options_str  += '<option value="Коптора">Коптора</option>';
+            NAME_BG_options_str  += '<option value="Коридора">Коридора</option>';
+            NAME_BG_options_str  += '<option value="Коритата">Коритата</option>';
+            NAME_BG_options_str  += '<option value="Коритата - №235">Коритата - №235</option>';
+            NAME_BG_options_str  += '<option value="Коритска дупка">Коритска дупка</option>';
+            NAME_BG_options_str  += '<option value="Корморана">Корморана</option>';
+            NAME_BG_options_str  += '<option value="Костадиновата пещера">Костадиновата пещера</option>';
+            NAME_BG_options_str  += '<option value="Костенурката">Костенурката</option>';
+            NAME_BG_options_str  += '<option value="Котилото">Котилото</option>';
+            NAME_BG_options_str  += '<option value="Котлите">Котлите</option>';
+            NAME_BG_options_str  += '<option value="Кошарките">Кошарките</option>';
+            NAME_BG_options_str  += '<option value="Краба">Краба</option>';
+            NAME_BG_options_str  += '<option value="Крайната пещера">Крайната пещера</option>';
+            NAME_BG_options_str  += '<option value="Крайпътна">Крайпътна</option>';
+            NAME_BG_options_str  += '<option value="Крайпътната">Крайпътната</option>';
+            NAME_BG_options_str  += '<option value="Крайпътната пещера">Крайпътната пещера</option>';
+            NAME_BG_options_str  += '<option value="Крайпътната пропаст">Крайпътната пропаст</option>';
+            NAME_BG_options_str  += '<option value="Крайречна">Крайречна</option>';
+            NAME_BG_options_str  += '<option value="Красавицата">Красавицата</option>';
+            NAME_BG_options_str  += '<option value="Кременска дупка">Кременска дупка</option>';
+            NAME_BG_options_str  += '<option value="Кривина">Кривина</option>';
+            NAME_BG_options_str  += '<option value="Кристалната">Кристалната</option>';
+            NAME_BG_options_str  += '<option value="Крокодила">Крокодила</option>';
+            NAME_BG_options_str  += '<option value="Кръволочица">Кръволочица</option>';
+            NAME_BG_options_str  += '<option value="Кръста">Кръста</option>';
+            NAME_BG_options_str  += '<option value="Кубенцето">Кубенцето</option>';
+            NAME_BG_options_str  += '<option value="Кузманица">Кузманица</option>';
+            NAME_BG_options_str  += '<option value="Кузманишка цепка">Кузманишка цепка</option>';
+            NAME_BG_options_str  += '<option value="Кулин камък">Кулин камък</option>';
+            NAME_BG_options_str  += '<option value="Кулина дупка">Кулина дупка</option>';
+            NAME_BG_options_str  += '<option value="Кумина">Кумина</option>';
+            NAME_BG_options_str  += '<option value="Купена">Купена</option>';
+            NAME_BG_options_str  += '<option value="Куртовата">Куртовата</option>';
+            NAME_BG_options_str  += '<option value="Кутело">Кутело</option>';
+            NAME_BG_options_str  += '<option value="Кутловица">Кутловица</option>';
+            NAME_BG_options_str  += '<option value="Куфара">Куфара</option>';
+            NAME_BG_options_str  += '<option value="Кучешката">Кучешката</option>';
+            NAME_BG_options_str  += '<option value="Кънчова върпина">Кънчова върпина</option>';
+            NAME_BG_options_str  += '<option value="Кървавата дупка">Кървавата дупка</option>';
+            NAME_BG_options_str  += '<option value="Късата дупка">Късата дупка</option>';
+            NAME_BG_options_str  += '<option value="Кюлдж ин">Кюлдж ин</option>';
+            NAME_BG_options_str  += '<option value="ЛЕВИ И ДЕСНИ СУХИ ПЕЧ">ЛЕВИ И ДЕСНИ СУХИ ПЕЧ</option>';
+            NAME_BG_options_str  += '<option value="ЛЕДЕНИКА">ЛЕДЕНИКА</option>';
+            NAME_BG_options_str  += '<option value="ЛЕДЕНИЦАТА">ЛЕДЕНИЦАТА</option>';
+            NAME_BG_options_str  += '<option value="ЛЕДНИКА">ЛЕДНИКА</option>';
+            NAME_BG_options_str  += '<option value="ЛЕДНИЦАТА">ЛЕДНИЦАТА</option>';
+            NAME_BG_options_str  += '<option value="ЛЕДНИЦАТА - ДО СЕЛОТО">ЛЕДНИЦАТА - ДО СЕЛОТО</option>';
+            NAME_BG_options_str  += '<option value="ЛЕПЕНИЦА">ЛЕПЕНИЦА</option>';
+            NAME_BG_options_str  += '<option value="ЛЯСТОВИЦАТА">ЛЯСТОВИЦАТА</option>';
+            NAME_BG_options_str  += '<option value="Лазуритовата дупка">Лазуритовата дупка</option>';
+            NAME_BG_options_str  += '<option value="Лалугера">Лалугера</option>';
+            NAME_BG_options_str  += '<option value="Леви Шупли камък">Леви Шупли камък</option>';
+            NAME_BG_options_str  += '<option value="Леговище">Леговище</option>';
+            NAME_BG_options_str  += '<option value="Леговището">Леговището</option>';
+            NAME_BG_options_str  += '<option value="Ледената пещера">Ледената пещера</option>';
+            NAME_BG_options_str  += '<option value="Леденото дупче">Леденото дупче</option>';
+            NAME_BG_options_str  += '<option value="Ледницата">Ледницата</option>';
+            NAME_BG_options_str  += '<option value="Лещака">Лещака</option>';
+            NAME_BG_options_str  += '<option value="Липата">Липата</option>';
+            NAME_BG_options_str  += '<option value="Липова дупка">Липова дупка</option>';
+            NAME_BG_options_str  += '<option value="Липовец 4563">Липовец 4563</option>';
+            NAME_BG_options_str  += '<option value="Лиса дупка">Лиса дупка</option>';
+            NAME_BG_options_str  += '<option value="Лисина дупка">Лисина дупка</option>';
+            NAME_BG_options_str  += '<option value="Лисичата пещера">Лисичата пещера</option>';
+            NAME_BG_options_str  += '<option value="Лозата">Лозата</option>';
+            NAME_BG_options_str  += '<option value="Лупура">Лупура</option>';
+            NAME_BG_options_str  += '<option value="Лъжливата">Лъжливата</option>';
+            NAME_BG_options_str  += '<option value="МАГУРАТА">МАГУРАТА</option>';
+            NAME_BG_options_str  += '<option value="МАЛКА БАЛАБАНОВА 1 ВХОД">МАЛКА БАЛАБАНОВА 1 ВХОД</option>';
+            NAME_BG_options_str  += '<option value="МАЛКА БАЛАБАНОВА 2 ВХОД">МАЛКА БАЛАБАНОВА 2 ВХОД</option>';
+            NAME_BG_options_str  += '<option value="МАЛКА БАНКОВИЦА (Безименна  85)">МАЛКА БАНКОВИЦА (Безименна  85)</option>';
+            NAME_BG_options_str  += '<option value="МАЛКАТА ПРЪДЛИВКА">МАЛКАТА ПРЪДЛИВКА</option>';
+            NAME_BG_options_str  += '<option value="МАЛКОТО СИГУЛАРО">МАЛКОТО СИГУЛАРО</option>';
+            NAME_BG_options_str  += '<option value="МАРКОВА ДУПКА">МАРКОВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="МАХАРАТА (КЕРЕЧИЙНИЦАТА)">МАХАРАТА (КЕРЕЧИЙНИЦАТА)</option>';
+            NAME_BG_options_str  += '<option value="МЕЧА ДУПКА">МЕЧА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="МЕЧАТА ДУПКА">МЕЧАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="МИЖИШНИЦА">МИЖИШНИЦА</option>';
+            NAME_BG_options_str  += '<option value="МИШИН КАМЪК">МИШИН КАМЪК</option>';
+            NAME_BG_options_str  += '<option value="МОРОВИЦА">МОРОВИЦА</option>';
+            NAME_BG_options_str  += '<option value="МРАМОРНАТА ПЕЩЕРА">МРАМОРНАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="МУСИНА ПЕЩЕРА">МУСИНА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="МЪГЛИВИЯ СНЯГ">МЪГЛИВИЯ СНЯГ</option>';
+            NAME_BG_options_str  += '<option value="Майаница">Майаница</option>';
+            NAME_BG_options_str  += '<option value="Мала дупка">Мала дупка</option>';
+            NAME_BG_options_str  += '<option value="Малата  Гарван пещера -">Малата  Гарван пещера -</option>';
+            NAME_BG_options_str  += '<option value="Малата дупка">Малата дупка</option>';
+            NAME_BG_options_str  += '<option value="Малата яма">Малата яма</option>';
+            NAME_BG_options_str  += '<option value="Малка Стойковица">Малка Стойковица</option>';
+            NAME_BG_options_str  += '<option value="Малка проходна пещера">Малка проходна пещера</option>';
+            NAME_BG_options_str  += '<option value="Малката Драндарска пропаст">Малката Драндарска пропаст</option>';
+            NAME_BG_options_str  += '<option value="Малката Каспичанска пещера">Малката Каспичанска пещера</option>';
+            NAME_BG_options_str  += '<option value="Малката Маара">Малката Маара</option>';
+            NAME_BG_options_str  += '<option value="Малката Меча дупка">Малката Меча дупка</option>';
+            NAME_BG_options_str  += '<option value="Малката Микренска">Малката Микренска</option>';
+            NAME_BG_options_str  += '<option value="Малката Самотворска пещера">Малката Самотворска пещера</option>';
+            NAME_BG_options_str  += '<option value="Малката иманярска дупка">Малката иманярска дупка</option>';
+            NAME_BG_options_str  += '<option value="Малката пещ">Малката пещ</option>';
+            NAME_BG_options_str  += '<option value="Малката пещера">Малката пещера</option>';
+            NAME_BG_options_str  += '<option value="Малката пещера под крепостта">Малката пещера под крепостта</option>';
+            NAME_BG_options_str  += '<option value="Малката чавка">Малката чавка</option>';
+            NAME_BG_options_str  += '<option value="Малката яма">Малката яма</option>';
+            NAME_BG_options_str  += '<option value="Малката ямка">Малката ямка</option>';
+            NAME_BG_options_str  += '<option value="Малкия облик">Малкия облик</option>';
+            NAME_BG_options_str  += '<option value="Малкият водопад">Малкият водопад</option>';
+            NAME_BG_options_str  += '<option value="Малкият парник">Малкият парник</option>';
+            NAME_BG_options_str  += '<option value="Малкият трап">Малкият трап</option>';
+            NAME_BG_options_str  += '<option value="Малкото кладенче">Малкото кладенче</option>';
+            NAME_BG_options_str  += '<option value="Малкото пропадало">Малкото пропадало</option>';
+            NAME_BG_options_str  += '<option value="Малък Сухомел">Малък Сухомел</option>';
+            NAME_BG_options_str  += '<option value="Манастира">Манастира</option>';
+            NAME_BG_options_str  += '<option value="Манастира и училището">Манастира и училището</option>';
+            NAME_BG_options_str  += '<option value="Мандрата">Мандрата</option>';
+            NAME_BG_options_str  += '<option value="Марийна дупка">Марийна дупка</option>';
+            NAME_BG_options_str  += '<option value="Марина дупка">Марина дупка</option>';
+            NAME_BG_options_str  += '<option value="Маринова дупка">Маринова дупка</option>';
+            NAME_BG_options_str  += '<option value="Мартиница">Мартиница</option>';
+            NAME_BG_options_str  += '<option value="Матейовата пещера">Матейовата пещера</option>';
+            NAME_BG_options_str  += '<option value="Мача дупка - 2">Мача дупка - 2</option>';
+            NAME_BG_options_str  += '<option value="Меандъра">Меандъра</option>';
+            NAME_BG_options_str  += '<option value="Меандъра и Очите?">Меандъра и Очите?</option>';
+            NAME_BG_options_str  += '<option value="Медузите">Медузите</option>';
+            NAME_BG_options_str  += '<option value="Междинната дупка">Междинната дупка</option>';
+            NAME_BG_options_str  += '<option value="Мерцедеса">Мерцедеса</option>';
+            NAME_BG_options_str  += '<option value="Метличина дупка">Метличина дупка</option>';
+            NAME_BG_options_str  += '<option value="Меча дупка">Меча дупка</option>';
+            NAME_BG_options_str  += '<option value="Мечата дупка">Мечата дупка</option>';
+            NAME_BG_options_str  += '<option value="Мечата пещера">Мечата пещера</option>';
+            NAME_BG_options_str  += '<option value="Мечкарската дупка">Мечкарската дупка</option>';
+            NAME_BG_options_str  += '<option value="Мижишница-2">Мижишница-2</option>';
+            NAME_BG_options_str  += '<option value="Мижишница-3">Мижишница-3</option>';
+            NAME_BG_options_str  += '<option value="Мижишница-4">Мижишница-4</option>';
+            NAME_BG_options_str  += '<option value="Минчова дупка">Минчова дупка</option>';
+            NAME_BG_options_str  += '<option value="Миризливка">Миризливка</option>';
+            NAME_BG_options_str  += '<option value="Младенова пропаст">Младенова пропаст</option>';
+            NAME_BG_options_str  += '<option value="Многоликата">Многоликата</option>';
+            NAME_BG_options_str  += '<option value="Могилата">Могилата</option>';
+            NAME_BG_options_str  += '<option value="Модърската пещера">Модърската пещера</option>';
+            NAME_BG_options_str  += '<option value="Монастирската пещера">Монастирската пещера</option>';
+            NAME_BG_options_str  += '<option value="Монетарницата">Монетарницата</option>';
+            NAME_BG_options_str  += '<option value="Морската пещера">Морската пещера</option>';
+            NAME_BG_options_str  += '<option value="Мрачната пещера">Мрачната пещера</option>';
+            NAME_BG_options_str  += '<option value="Муйна дупка">Муйна дупка</option>';
+            NAME_BG_options_str  += '<option value="Мъгливата">Мъгливата</option>';
+            NAME_BG_options_str  += '<option value="Мъхнатите скали">Мъхнатите скали</option>';
+            NAME_BG_options_str  += '<option value="Н 13">Н 13</option>';
+            NAME_BG_options_str  += '<option value="НАНИН КАМЪК">НАНИН КАМЪК</option>';
+            NAME_BG_options_str  += '<option value="НЕВЕСТУЛКАТА">НЕВЕСТУЛКАТА</option>';
+            NAME_BG_options_str  += '<option value="НЕИКОВСКИ ПРОПАСТИ">НЕИКОВСКИ ПРОПАСТИ</option>';
+            NAME_BG_options_str  += '<option value="НОВАТА ПЕЩЕРА">НОВАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="НОВАТА ПРОДЪНКА">НОВАТА ПРОДЪНКА</option>';
+            NAME_BG_options_str  += '<option value="Над Лисичата">Над Лисичата</option>';
+            NAME_BG_options_str  += '<option value="Надарска пещера">Надарска пещера</option>';
+            NAME_BG_options_str  += '<option value="Нановица">Нановица</option>';
+            NAME_BG_options_str  += '<option value="Невестина пропаст">Невестина пропаст</option>';
+            NAME_BG_options_str  += '<option value="Ненина дупка">Ненина дупка</option>';
+            NAME_BG_options_str  += '<option value="Ниновски въртоп">Ниновски въртоп</option>';
+            NAME_BG_options_str  += '<option value="Нишана">Нишана</option>';
+            NAME_BG_options_str  += '<option value="Новата пещера">Новата пещера</option>';
+            NAME_BG_options_str  += '<option value="Няглова яма">Няглова яма</option>';
+            NAME_BG_options_str  += '<option value="ОЖДРЕН">ОЖДРЕН</option>';
+            NAME_BG_options_str  += '<option value="ОРЛОВА ЧУКА">ОРЛОВА ЧУКА</option>';
+            NAME_BG_options_str  += '<option value="ОРЛОВИТЕ ПЕЩЕРИ">ОРЛОВИТЕ ПЕЩЕРИ</option>';
+            NAME_BG_options_str  += '<option value="ОТВОР ДО БЯЛАТА ВОДА">ОТВОР ДО БЯЛАТА ВОДА</option>';
+            NAME_BG_options_str  += '<option value="Овнарката">Овнарката</option>';
+            NAME_BG_options_str  += '<option value="Овчата пропаст">Овчата пропаст</option>';
+            NAME_BG_options_str  += '<option value="Оградска пещера">Оградска пещера</option>';
+            NAME_BG_options_str  += '<option value="Опушената">Опушената</option>';
+            NAME_BG_options_str  += '<option value="Опушената ниша">Опушената ниша</option>';
+            NAME_BG_options_str  += '<option value="Орехова дупка">Орехова дупка</option>';
+            NAME_BG_options_str  += '<option value="Осми март">Осми март</option>';
+            NAME_BG_options_str  += '<option value="Охлюва">Охлюва</option>';
+            NAME_BG_options_str  += '<option value="Охо бохо">Охо бохо</option>';
+            NAME_BG_options_str  += '<option value="Очилата">Очилата</option>';
+            NAME_BG_options_str  += '<option value="Очите">Очите</option>';
+            NAME_BG_options_str  += '<option value="Очичките">Очичките</option>';
+            NAME_BG_options_str  += '<option value="П КАМАК">П КАМАК</option>';
+            NAME_BG_options_str  += '<option value="ПАДАЛОТО (СО2)">ПАДАЛОТО (СО2)</option>';
+            NAME_BG_options_str  += '<option value="ПАРАМУНСКА ПРОПАСТ">ПАРАМУНСКА ПРОПАСТ</option>';
+            NAME_BG_options_str  += '<option value="ПАРТИЗАНСКАТА (РЕМСОВАТА)">ПАРТИЗАНСКАТА (РЕМСОВАТА)</option>';
+            NAME_BG_options_str  += '<option value="ПЕЩА МАХАЛА ПРЕЛОГ-ЯБЛАНИЦА">ПЕЩА МАХАЛА ПРЕЛОГ-ЯБЛАНИЦА</option>';
+            NAME_BG_options_str  += '<option value="ПЕЩЕРА НА ИЗВОРИТЕ НА РЕКА МЛАДЕЖКА (ЕЗЕРОТО)">ПЕЩЕРА НА ИЗВОРИТЕ НА РЕКА МЛАДЕЖКА (ЕЗЕРОТО)</option>';
+            NAME_BG_options_str  += '<option value="ПЕЩЕРАТА В МЕСТНОСТТА БОЙЧОВА СКАЛА">ПЕЩЕРАТА В МЕСТНОСТТА БОЙЧОВА СКАЛА</option>';
+            NAME_BG_options_str  += '<option value="ПЕЩЕРАТА В МЕСТНОСТТА ЦАРЕВЕЦ">ПЕЩЕРАТА В МЕСТНОСТТА ЦАРЕВЕЦ</option>';
+            NAME_BG_options_str  += '<option value="ПОНОРА">ПОНОРА</option>';
+            NAME_BG_options_str  += '<option value="ПОНОРИТЕ (ПРОПАСТИТЕ)">ПОНОРИТЕ (ПРОПАСТИТЕ)</option>';
+            NAME_BG_options_str  += '<option value="ПОРОВИ ДУПКИ-1">ПОРОВИ ДУПКИ-1</option>';
+            NAME_BG_options_str  += '<option value="ППД">ППД</option>';
+            NAME_BG_options_str  += '<option value="ПРИКАЗНА">ПРИКАЗНА</option>';
+            NAME_BG_options_str  += '<option value="ПРОДЪНЕНАТА">ПРОДЪНЕНАТА</option>';
+            NAME_BG_options_str  += '<option value="ПРОПАДНАЛОТО">ПРОПАДНАЛОТО</option>';
+            NAME_BG_options_str  += '<option value="ПРОПАДНАЛОТО  II ВХОД">ПРОПАДНАЛОТО  II ВХОД</option>';
+            NAME_BG_options_str  += '<option value="ПРОПАСТ S-8">ПРОПАСТ S-8</option>';
+            NAME_BG_options_str  += '<option value="ПРОПАСТ ПЛАНИНЕЦ ГЛОЖЕНЕ">ПРОПАСТ ПЛАНИНЕЦ ГЛОЖЕНЕ</option>';
+            NAME_BG_options_str  += '<option value="ПРОПАСТЧИЦИТЕ">ПРОПАСТЧИЦИТЕ</option>';
+            NAME_BG_options_str  += '<option value="ПРОХОДНА">ПРОХОДНА</option>';
+            NAME_BG_options_str  += '<option value="ПЯСЪЧНИК">ПЯСЪЧНИК</option>';
+            NAME_BG_options_str  += '<option value="ПЯСЪЧНИЦА">ПЯСЪЧНИЦА</option>';
+            NAME_BG_options_str  += '<option value="Падалото">Падалото</option>';
+            NAME_BG_options_str  += '<option value="Панежки карстов комплекс">Панежки карстов комплекс</option>';
+            NAME_BG_options_str  += '<option value="Паниче">Паниче</option>';
+            NAME_BG_options_str  += '<option value="Пановската дупка">Пановската дупка</option>';
+            NAME_BG_options_str  += '<option value="Панчови грамади">Панчови грамади</option>';
+            NAME_BG_options_str  += '<option value="Парниците">Парниците</option>';
+            NAME_BG_options_str  += '<option value="Партизанската дупка">Партизанската дупка</option>';
+            NAME_BG_options_str  += '<option value="Партизанската пещера">Партизанската пещера</option>';
+            NAME_BG_options_str  += '<option value="Паяшката">Паяшката</option>';
+            NAME_BG_options_str  += '<option value="Пековската пещера">Пековската пещера</option>';
+            NAME_BG_options_str  += '<option value="Пепеливата">Пепеливата</option>';
+            NAME_BG_options_str  += '<option value="Пепелянката">Пепелянката</option>';
+            NAME_BG_options_str  += '<option value="Пепелянчето">Пепелянчето</option>';
+            NAME_BG_options_str  += '<option value="Перушана">Перушана</option>';
+            NAME_BG_options_str  += '<option value="Песечливата ниша">Песечливата ниша</option>';
+            NAME_BG_options_str  += '<option value="Песопин камък">Песопин камък</option>';
+            NAME_BG_options_str  += '<option value="Петльовдолски дупки 1 и 2">Петльовдолски дупки 1 и 2</option>';
+            NAME_BG_options_str  += '<option value="Петрохан">Петрохан</option>';
+            NAME_BG_options_str  += '<option value="Пешова яма">Пешова яма</option>';
+            NAME_BG_options_str  += '<option value="Пещ.Езерото">Пещ.Езерото</option>';
+            NAME_BG_options_str  += '<option value="Пещ.Преслопа">Пещ.Преслопа</option>';
+            NAME_BG_options_str  += '<option value="Пещ.над извора">Пещ.над извора</option>';
+            NAME_BG_options_str  += '<option value="Пещ.над извора Радин кладенец">Пещ.над извора Радин кладенец</option>';
+            NAME_BG_options_str  += '<option value="Пещ.над пътя">Пещ.над пътя</option>';
+            NAME_BG_options_str  += '<option value="Пещера 1 и втория вход на пещера 2">Пещера 1 и втория вход на пещера 2</option>';
+            NAME_BG_options_str  += '<option value="Пещера 2 вход 1">Пещера 2 вход 1</option>';
+            NAME_BG_options_str  += '<option value="Пещера 3">Пещера 3</option>';
+            NAME_BG_options_str  += '<option value="Пещерата на Раковски">Пещерата на Раковски</option>';
+            NAME_BG_options_str  += '<option value="Пещерата на водопадите">Пещерата на водопадите</option>';
+            NAME_BG_options_str  += '<option value="Пещерата на стрелите">Пещерата на стрелите</option>';
+            NAME_BG_options_str  += '<option value="Пещерата с двата прозореца">Пещерата с двата прозореца</option>';
+            NAME_BG_options_str  += '<option value="Пещерата с подова замазка">Пещерата с подова замазка</option>';
+            NAME_BG_options_str  += '<option value="Пещерите при с.Мадара">Пещерите при с.Мадара</option>';
+            NAME_BG_options_str  += '<option value="Пещта">Пещта</option>';
+            NAME_BG_options_str  += '<option value="Пичова дупка 1">Пичова дупка 1</option>';
+            NAME_BG_options_str  += '<option value="Пишурата">Пишурата</option>';
+            NAME_BG_options_str  += '<option value="Пладнището">Пладнището</option>';
+            NAME_BG_options_str  += '<option value="Плъзнята">Плъзнята</option>';
+            NAME_BG_options_str  += '<option value="Плътненица">Плътненица</option>';
+            NAME_BG_options_str  += '<option value="Погледец">Погледец</option>';
+            NAME_BG_options_str  += '<option value="Подкладката">Подкладката</option>';
+            NAME_BG_options_str  += '<option value="Подмола">Подмола</option>';
+            NAME_BG_options_str  += '<option value="Подника">Подника</option>';
+            NAME_BG_options_str  += '<option value="Полигонова точка 1">Полигонова точка 1</option>';
+            NAME_BG_options_str  += '<option value="Полковник Серафимов">Полковник Серафимов</option>';
+            NAME_BG_options_str  += '<option value="Полянската пещера">Полянската пещера</option>';
+            NAME_BG_options_str  += '<option value="Понор 225">Понор 225</option>';
+            NAME_BG_options_str  += '<option value="Попрелката">Попрелката</option>';
+            NAME_BG_options_str  += '<option value="Попската">Попската</option>';
+            NAME_BG_options_str  += '<option value="Портала">Портала</option>';
+            NAME_BG_options_str  += '<option value="Портите">Портите</option>';
+            NAME_BG_options_str  += '<option value="Потопената ниша">Потопената ниша</option>';
+            NAME_BG_options_str  += '<option value="Правата пещера">Правата пещера</option>';
+            NAME_BG_options_str  += '<option value="Празното кречетало">Празното кречетало</option>';
+            NAME_BG_options_str  += '<option value="Прашната">Прашната</option>';
+            NAME_BG_options_str  += '<option value="Прашната бърлога">Прашната бърлога</option>';
+            NAME_BG_options_str  += '<option value="Превалета дупка">Превалета дупка</option>';
+            NAME_BG_options_str  += '<option value="Премката">Премката</option>';
+            NAME_BG_options_str  += '<option value="Приказка">Приказка</option>';
+            NAME_BG_options_str  += '<option value="Примката">Примката</option>';
+            NAME_BG_options_str  += '<option value="Пробития камък">Пробития камък</option>';
+            NAME_BG_options_str  += '<option value="Пробойница 1">Пробойница 1</option>';
+            NAME_BG_options_str  += '<option value="Пробойница 2">Пробойница 2</option>';
+            NAME_BG_options_str  += '<option value="Проветривата">Проветривата</option>';
+            NAME_BG_options_str  += '<option value="Прозорчетата">Прозорчетата</option>';
+            NAME_BG_options_str  += '<option value="Пропадналата">Пропадналата</option>';
+            NAME_BG_options_str  += '<option value="Пропадналото">Пропадналото</option>';
+            NAME_BG_options_str  += '<option value="Пропаст">Пропаст</option>';
+            NAME_BG_options_str  += '<option value="Пропаст Кръста">Пропаст Кръста</option>';
+            NAME_BG_options_str  += '<option value="Пропаст №9">Пропаст №9</option>';
+            NAME_BG_options_str  += '<option value="Пропастта в галерия №4">Пропастта в галерия №4</option>';
+            NAME_BG_options_str  += '<option value="Пропастта на Градището">Пропастта на Градището</option>';
+            NAME_BG_options_str  += '<option value="Прохода">Прохода</option>';
+            NAME_BG_options_str  += '<option value="Проходилката">Проходилката</option>';
+            NAME_BG_options_str  += '<option value="Проходна">Проходна</option>';
+            NAME_BG_options_str  += '<option value="Проходна 1">Проходна 1</option>';
+            NAME_BG_options_str  += '<option value="Проходна 2">Проходна 2</option>';
+            NAME_BG_options_str  += '<option value="Проходната ниша">Проходната ниша</option>';
+            NAME_BG_options_str  += '<option value="Проходница">Проходница</option>';
+            NAME_BG_options_str  += '<option value="Процепа">Процепа</option>';
+            NAME_BG_options_str  += '<option value="Птичата дупка">Птичата дупка</option>';
+            NAME_BG_options_str  += '<option value="Пукоя">Пукоя</option>';
+            NAME_BG_options_str  += '<option value="Пършевишка яма">Пършевишка яма</option>';
+            NAME_BG_options_str  += '<option value="Пясъчната дупка">Пясъчната дупка</option>';
+            NAME_BG_options_str  += '<option value="РАДИНАТА ПЕЩЕРА (ГОЛЯМАТА ПЕЩЕРА)">РАДИНАТА ПЕЩЕРА (ГОЛЯМАТА ПЕЩЕРА)</option>';
+            NAME_BG_options_str  += '<option value="РАЗБИТИЦА">РАЗБИТИЦА</option>';
+            NAME_BG_options_str  += '<option value="РАКОВСКИ">РАКОВСКИ</option>';
+            NAME_BG_options_str  += '<option value="РАСОВАТАТА  ЯМА">РАСОВАТАТА  ЯМА</option>';
+            NAME_BG_options_str  += '<option value="РУШОВА СУКСА">РУШОВА СУКСА</option>';
+            NAME_BG_options_str  += '<option value="РУШОВАТА">РУШОВАТА</option>';
+            NAME_BG_options_str  += '<option value="РЪЖИШКАТА ДУПКА">РЪЖИШКАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="РЪКАВИЦАТ">РЪКАВИЦАТ</option>';
+            NAME_BG_options_str  += '<option value="Радков заскок">Радков заскок</option>';
+            NAME_BG_options_str  += '<option value="Радолова яма">Радолова яма</option>';
+            NAME_BG_options_str  += '<option value="Разбитица">Разбитица</option>';
+            NAME_BG_options_str  += '<option value="Раздолци">Раздолци</option>';
+            NAME_BG_options_str  += '<option value="Разкопаната">Разкопаната</option>';
+            NAME_BG_options_str  += '<option value="Разсоватата яма">Разсоватата яма</option>';
+            NAME_BG_options_str  += '<option value="Разцепената пещера">Разцепената пещера</option>';
+            NAME_BG_options_str  += '<option value="Райчова дупка">Райчова дупка</option>';
+            NAME_BG_options_str  += '<option value="Рапата">Рапата</option>';
+            NAME_BG_options_str  += '<option value="Рашова дупка – Овчарската пропаст">Рашова дупка – Овчарската пропаст</option>';
+            NAME_BG_options_str  += '<option value="Редака">Редака</option>';
+            NAME_BG_options_str  += '<option value="Резньовете">Резньовете</option>';
+            NAME_BG_options_str  += '<option value="Рибката">Рибката</option>';
+            NAME_BG_options_str  += '<option value="Рибновската пещера">Рибновската пещера</option>';
+            NAME_BG_options_str  += '<option value="Римлянката">Римлянката</option>';
+            NAME_BG_options_str  += '<option value="Римската пещера">Римската пещера</option>';
+            NAME_BG_options_str  += '<option value="Ритлата">Ритлата</option>';
+            NAME_BG_options_str  += '<option value="Рогачевата пещера">Рогачевата пещера</option>';
+            NAME_BG_options_str  += '<option value="Рогчето">Рогчето</option>';
+            NAME_BG_options_str  += '<option value="Родна 1">Родна 1</option>';
+            NAME_BG_options_str  += '<option value="Роня">Роня</option>';
+            NAME_BG_options_str  += '<option value="Рудничар(пропаст)">Рудничар(пропаст)</option>';
+            NAME_BG_options_str  += '<option value="Ружица">Ружица</option>';
+            NAME_BG_options_str  += '<option value="Рупата">Рупата</option>';
+            NAME_BG_options_str  += '<option value="Русе">Русе</option>';
+            NAME_BG_options_str  += '<option value="Рушовата пещера  (ГРАДЕШНИЦА)">Рушовата пещера  (ГРАДЕШНИЦА)</option>';
+            NAME_BG_options_str  += '<option value="Ръжишка яма">Ръжишка яма</option>';
+            NAME_BG_options_str  += '<option value="САКОВА">САКОВА</option>';
+            NAME_BG_options_str  += '<option value="САМУИЛИЦА I И II (ВАСИЛИЦА)">САМУИЛИЦА I И II (ВАСИЛИЦА)</option>';
+            NAME_BG_options_str  += '<option value="СВЕТА ТРОИЦА (КАРАКОЛЮВА) , (ВЕТАТА ЧЕРКВА)">СВЕТА ТРОИЦА (КАРАКОЛЮВА) , (ВЕТАТА ЧЕРКВА)</option>';
+            NAME_BG_options_str  += '<option value="СВЕТИ 40 МЪЧЕНИЦИ">СВЕТИ 40 МЪЧЕНИЦИ</option>';
+            NAME_BG_options_str  += '<option value="СВИНСКАТА ДУПКА">СВИНСКАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="СВИРЧОВИЦА">СВИРЧОВИЦА</option>';
+            NAME_BG_options_str  += '<option value="СВРЕДЕЛО">СВРЕДЕЛО</option>';
+            NAME_BG_options_str  += '<option value="СЕДЛАРКАТА">СЕДЛАРКАТА</option>';
+            NAME_BG_options_str  += '<option value="СЕДЛОТО">СЕДЛОТО</option>';
+            NAME_BG_options_str  += '<option value="СЕДМОВРАТИЦА">СЕДМОВРАТИЦА</option>';
+            NAME_BG_options_str  += '<option value="СЕРАПИОНОВАТА  ПЕЩЕРА">СЕРАПИОНОВАТА  ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="СКАЛНИТЕ РИСУНКИ">СКАЛНИТЕ РИСУНКИ</option>';
+            NAME_BG_options_str  += '<option value="СЛАВОВИЦА">СЛАВОВИЦА</option>';
+            NAME_BG_options_str  += '<option value="СМЕТТА 2">СМЕТТА 2</option>';
+            NAME_BG_options_str  += '<option value="СНЕЖАНКА">СНЕЖАНКА</option>';
+            NAME_BG_options_str  += '<option value="СТАРАТА ПРОДЪНКА">СТАРАТА ПРОДЪНКА</option>';
+            NAME_BG_options_str  += '<option value="СТУБЛИШКА МАРТА">СТУБЛИШКА МАРТА</option>';
+            NAME_BG_options_str  += '<option value="СУХАТА ПЕЩЕРА (МААЗАТА)">СУХАТА ПЕЩЕРА (МААЗАТА)</option>';
+            NAME_BG_options_str  += '<option value="СЪЕВА ДУПКА">СЪЕВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="Саладинова пещ">Саладинова пещ</option>';
+            NAME_BG_options_str  += '<option value="Саламандъра">Саламандъра</option>';
+            NAME_BG_options_str  += '<option value="Салиевата пещера">Салиевата пещера</option>';
+            NAME_BG_options_str  += '<option value="Санчова дупка">Санчова дупка</option>';
+            NAME_BG_options_str  += '<option value="Светата вода">Светата вода</option>';
+            NAME_BG_options_str  += '<option value="Светлата">Светлата</option>';
+            NAME_BG_options_str  += '<option value="Светлата диаклазна цепка">Светлата диаклазна цепка</option>';
+            NAME_BG_options_str  += '<option value="Свинщица">Свинщица</option>';
+            NAME_BG_options_str  += '<option value="Свирчовината">Свирчовината</option>';
+            NAME_BG_options_str  += '<option value="Свичиля">Свичиля</option>';
+            NAME_BG_options_str  += '<option value="Сводестата">Сводестата</option>';
+            NAME_BG_options_str  += '<option value="Селимова дупка">Селимова дупка</option>';
+            NAME_BG_options_str  += '<option value="Сеновала">Сеновала</option>';
+            NAME_BG_options_str  += '<option value="Силивряк">Силивряк</option>';
+            NAME_BG_options_str  += '<option value="Синьо-зелената">Синьо-зелената</option>';
+            NAME_BG_options_str  += '<option value="Сипо 1">Сипо 1</option>';
+            NAME_BG_options_str  += '<option value="Сипо 2">Сипо 2</option>';
+            NAME_BG_options_str  += '<option value="Сипо 4">Сипо 4</option>';
+            NAME_BG_options_str  += '<option value="Ситото">Ситото</option>';
+            NAME_BG_options_str  += '<option value="Скалния мост">Скалния мост</option>';
+            NAME_BG_options_str  += '<option value="Скока">Скока</option>';
+            NAME_BG_options_str  += '<option value="Скравеника">Скравеника</option>';
+            NAME_BG_options_str  += '<option value="Скривалището">Скривалището</option>';
+            NAME_BG_options_str  += '<option value="Скритата">Скритата</option>';
+            NAME_BG_options_str  += '<option value="Скритата дупка">Скритата дупка</option>';
+            NAME_BG_options_str  += '<option value="Слоговия въртоп">Слоговия въртоп</option>';
+            NAME_BG_options_str  += '<option value="Слона">Слона</option>';
+            NAME_BG_options_str  += '<option value="Слънчев бряг">Слънчев бряг</option>';
+            NAME_BG_options_str  += '<option value="Смока">Смока</option>';
+            NAME_BG_options_str  += '<option value="Смочето">Смочето</option>';
+            NAME_BG_options_str  += '<option value="Смърдешница">Смърдешница</option>';
+            NAME_BG_options_str  += '<option value="Снягова дупка">Снягова дупка</option>';
+            NAME_BG_options_str  += '<option value="Совина дупка">Совина дупка</option>';
+            NAME_BG_options_str  += '<option value="Соколец">Соколец</option>';
+            NAME_BG_options_str  += '<option value="Соколецка пещера">Соколецка пещера</option>';
+            NAME_BG_options_str  += '<option value="Соколица">Соколица</option>';
+            NAME_BG_options_str  += '<option value="Соколската">Соколската</option>';
+            NAME_BG_options_str  += '<option value="Сопотска пещера">Сопотска пещера</option>';
+            NAME_BG_options_str  += '<option value="Спропадналото">Спропадналото</option>';
+            NAME_BG_options_str  += '<option value="Средната пещера">Средната пещера</option>';
+            NAME_BG_options_str  += '<option value="Средния въртоп">Средния въртоп</option>';
+            NAME_BG_options_str  += '<option value="Стаичката">Стаичката</option>';
+            NAME_BG_options_str  += '<option value="Стакьовица">Стакьовица</option>';
+            NAME_BG_options_str  += '<option value="Стойкова дупка 1">Стойкова дупка 1</option>';
+            NAME_BG_options_str  += '<option value="Стойкова дупка 2">Стойкова дупка 2</option>';
+            NAME_BG_options_str  += '<option value="Стойнената дупка">Стойнената дупка</option>';
+            NAME_BG_options_str  += '<option value="Стрешерска яма">Стрешерска яма</option>';
+            NAME_BG_options_str  += '<option value="Стрихнинова пропаст">Стрихнинова пропаст</option>';
+            NAME_BG_options_str  += '<option value="Стублата">Стублата</option>';
+            NAME_BG_options_str  += '<option value="Стублешка яма I">Стублешка яма I</option>';
+            NAME_BG_options_str  += '<option value="Стублешкото кладенче II">Стублешкото кладенче II</option>';
+            NAME_BG_options_str  += '<option value="Студена">Студена</option>';
+            NAME_BG_options_str  += '<option value="Студена дупка">Студена дупка</option>';
+            NAME_BG_options_str  += '<option value="Стълбица">Стълбица</option>';
+            NAME_BG_options_str  += '<option value="Стъпалката">Стъпалката</option>';
+            NAME_BG_options_str  += '<option value="Стъпалките">Стъпалките</option>';
+            NAME_BG_options_str  += '<option value="Стъргата">Стъргата</option>';
+            NAME_BG_options_str  += '<option value="Стъркача">Стъркача</option>';
+            NAME_BG_options_str  += '<option value="Субаттъ">Субаттъ</option>';
+            NAME_BG_options_str  += '<option value="Сулан чаир">Сулан чаир</option>';
+            NAME_BG_options_str  += '<option value="Сухата">Сухата</option>';
+            NAME_BG_options_str  += '<option value="Сухата пещера">Сухата пещера</option>';
+            NAME_BG_options_str  += '<option value="Сухая">Сухая</option>';
+            NAME_BG_options_str  += '<option value="Сухия петел">Сухия петел</option>';
+            NAME_BG_options_str  += '<option value="Суходолска 1">Суходолска 1</option>';
+            NAME_BG_options_str  += '<option value="Суходолска 2">Суходолска 2</option>';
+            NAME_BG_options_str  += '<option value="Суходолска 3">Суходолска 3</option>';
+            NAME_BG_options_str  += '<option value="Сферата">Сферата</option>';
+            NAME_BG_options_str  += '<option value="Съперницата">Съперницата</option>';
+            NAME_BG_options_str  += '<option value="ТАТАРКИНЯТА">ТАТАРКИНЯТА</option>';
+            NAME_BG_options_str  += '<option value="ТВД">ТВД</option>';
+            NAME_BG_options_str  += '<option value="ТЕМНАТА ДУПКА - ГУБЕШ">ТЕМНАТА ДУПКА - ГУБЕШ</option>';
+            NAME_BG_options_str  += '<option value="ТЕМНАТА ДУПКА - КАЛОТИНА">ТЕМНАТА ДУПКА - КАЛОТИНА</option>';
+            NAME_BG_options_str  += '<option value="ТЕМНАТА ДУПКА - КАРЛУКОВО">ТЕМНАТА ДУПКА - КАРЛУКОВО</option>';
+            NAME_BG_options_str  += '<option value="ТЕМНАТА ДУПКА - ЛАКАТНИК">ТЕМНАТА ДУПКА - ЛАКАТНИК</option>';
+            NAME_BG_options_str  += '<option value="ТЕПАВИЦАТА">ТЕПАВИЦАТА</option>';
+            NAME_BG_options_str  += '<option value="ТИЗОЙН">ТИЗОЙН</option>';
+            NAME_BG_options_str  += '<option value="ТОПЛАТА ДУПКА">ТОПЛАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ТОПЧИКА">ТОПЧИКА</option>';
+            NAME_BG_options_str  += '<option value="ТУЛУМОВАТА ПЕЩЕРА (БОТУРА)">ТУЛУМОВАТА ПЕЩЕРА (БОТУРА)</option>';
+            NAME_BG_options_str  += '<option value="ТУНЕЛА">ТУНЕЛА</option>';
+            NAME_BG_options_str  += '<option value="ТЪРСА 1">ТЪРСА 1</option>';
+            NAME_BG_options_str  += '<option value="ТЮЛЕНОВАТА">ТЮЛЕНОВАТА</option>';
+            NAME_BG_options_str  += '<option value="Табана">Табана</option>';
+            NAME_BG_options_str  += '<option value="Тамбарасца">Тамбарасца</option>';
+            NAME_BG_options_str  += '<option value="Таш кюприя">Таш кюприя</option>';
+            NAME_BG_options_str  += '<option value="Темната пещера">Темната пещера</option>';
+            NAME_BG_options_str  += '<option value="Темницата">Темницата</option>';
+            NAME_BG_options_str  += '<option value="Тенчи пещера">Тенчи пещера</option>';
+            NAME_BG_options_str  += '<option value="Терзийската пещера">Терзийската пещера</option>';
+            NAME_BG_options_str  += '<option value="Тиганчето">Тиганчето</option>';
+            NAME_BG_options_str  += '<option value="Тиклата">Тиклата</option>';
+            NAME_BG_options_str  += '<option value="Тиклица">Тиклица</option>';
+            NAME_BG_options_str  += '<option value="Типицето">Типицето</option>';
+            NAME_BG_options_str  += '<option value="Типченица">Типченица</option>';
+            NAME_BG_options_str  += '<option value="Тоневата пещера">Тоневата пещера</option>';
+            NAME_BG_options_str  += '<option value="Топля">Топля</option>';
+            NAME_BG_options_str  += '<option value="Тошова дупка">Тошова дупка</option>';
+            NAME_BG_options_str  += '<option value="Тошова дупка-горен вход">Тошова дупка-горен вход</option>';
+            NAME_BG_options_str  += '<option value="Траверсчето  № 175а">Траверсчето  № 175а</option>';
+            NAME_BG_options_str  += '<option value="Трахлевица">Трахлевица</option>';
+            NAME_BG_options_str  += '<option value="Триоката">Триоката</option>';
+            NAME_BG_options_str  += '<option value="Трите лисичи дупки">Трите лисичи дупки</option>';
+            NAME_BG_options_str  += '<option value="Трите точки">Трите точки</option>';
+            NAME_BG_options_str  += '<option value="Тритоновата">Тритоновата</option>';
+            NAME_BG_options_str  += '<option value="Триъгълната">Триъгълната</option>';
+            NAME_BG_options_str  += '<option value="Триъгълната пещера">Триъгълната пещера</option>';
+            NAME_BG_options_str  += '<option value="Троана">Троана</option>';
+            NAME_BG_options_str  += '<option value="Тръбата">Тръбата</option>';
+            NAME_BG_options_str  += '<option value="Трънливата">Трънливата</option>';
+            NAME_BG_options_str  += '<option value="Тунела">Тунела</option>';
+            NAME_BG_options_str  += '<option value="Тунелчетата">Тунелчетата</option>';
+            NAME_BG_options_str  += '<option value="Тунелчето">Тунелчето</option>';
+            NAME_BG_options_str  += '<option value="Тупанете">Тупанете</option>';
+            NAME_BG_options_str  += '<option value="Тъмната страна">Тъмната страна</option>';
+            NAME_BG_options_str  += '<option value="Търса">Търса</option>';
+            NAME_BG_options_str  += '<option value="Търсова дупка">Търсова дупка</option>';
+            NAME_BG_options_str  += '<option value="Търсова пещера">Търсова пещера</option>';
+            NAME_BG_options_str  += '<option value="Търсова яма">Търсова яма</option>';
+            NAME_BG_options_str  += '<option value="Тюленовата пещера">Тюленовата пещера</option>';
+            NAME_BG_options_str  += '<option value="Тясната височина">Тясната височина</option>';
+            NAME_BG_options_str  += '<option value="Тясната цепка">Тясната цепка</option>';
+            NAME_BG_options_str  += '<option value="Тясната цепкуля">Тясната цепкуля</option>';
+            NAME_BG_options_str  += '<option value="УРСУС ДУПКА">УРСУС ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="УРУШКА МАРА">УРУШКА МАРА</option>';
+            NAME_BG_options_str  += '<option value="УХЛОВИЦА">УХЛОВИЦА</option>';
+            NAME_BG_options_str  += '<option value="Ужаса на иманярите">Ужаса на иманярите</option>';
+            NAME_BG_options_str  += '<option value="Урушка маара">Урушка маара</option>';
+            NAME_BG_options_str  += '<option value="Усран дол">Усран дол</option>';
+            NAME_BG_options_str  += '<option value="Ухловица">Ухловица</option>';
+            NAME_BG_options_str  += '<option value="ФУРНАТА">ФУРНАТА</option>';
+            NAME_BG_options_str  += '<option value="ФУТАТА">ФУТАТА</option>';
+            NAME_BG_options_str  += '<option value="Феникса">Феникса</option>';
+            NAME_BG_options_str  += '<option value="Филиповската пещера">Филиповската пещера</option>';
+            NAME_BG_options_str  += '<option value="Форгово-1">Форгово-1</option>';
+            NAME_BG_options_str  += '<option value="Фурната">Фурната</option>';
+            NAME_BG_options_str  += '<option value="ХАЙДУШКА ДУПКА">ХАЙДУШКА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ХАЙДУШКАТА">ХАЙДУШКАТА</option>';
+            NAME_BG_options_str  += '<option value="ХАЙДУШКАТА ПЕЩЕРА">ХАЙДУШКАТА ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="ХЛАДИЛНАТА">ХЛАДИЛНАТА</option>';
+            NAME_BG_options_str  += '<option value="ХЛАДИЛНАТА ПЕЩЕРА (S39)">ХЛАДИЛНАТА ПЕЩЕРА (S39)</option>';
+            NAME_BG_options_str  += '<option value="ХУБАВИЦАТА">ХУБАВИЦАТА</option>';
+            NAME_BG_options_str  += '<option value="Хайвана">Хайвана</option>';
+            NAME_BG_options_str  += '<option value="Хайдушката дупка">Хайдушката дупка</option>';
+            NAME_BG_options_str  += '<option value="Хайдушката пещера - 2">Хайдушката пещера - 2</option>';
+            NAME_BG_options_str  += '<option value="Халката">Халката</option>';
+            NAME_BG_options_str  += '<option value="Хеликтита">Хеликтита</option>';
+            NAME_BG_options_str  += '<option value="Хера">Хера</option>';
+            NAME_BG_options_str  += '<option value="Хижарската пещера">Хижарската пещера</option>';
+            NAME_BG_options_str  += '<option value="Хладилника или Долмените">Хладилника или Долмените</option>';
+            NAME_BG_options_str  += '<option value="Хралупа">Хралупа</option>';
+            NAME_BG_options_str  += '<option value="Хрисима">Хрисима</option>';
+            NAME_BG_options_str  += '<option value="ЦАКЛИНА ДУПКА">ЦАКЛИНА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ЦАНКОВА">ЦАНКОВА</option>';
+            NAME_BG_options_str  += '<option value="ЦЪРКВЕТО">ЦЪРКВЕТО</option>';
+            NAME_BG_options_str  += '<option value="Цаков въртоп">Цаков въртоп</option>';
+            NAME_BG_options_str  += '<option value="Ценов цепкол">Ценов цепкол</option>';
+            NAME_BG_options_str  += '<option value="Цепката">Цепката</option>';
+            NAME_BG_options_str  += '<option value="Цепкулата">Цепкулата</option>';
+            NAME_BG_options_str  += '<option value="Цигарлъка">Цигарлъка</option>';
+            NAME_BG_options_str  += '<option value="Църна дупка">Църна дупка</option>';
+            NAME_BG_options_str  += '<option value="Църната Дупка">Църната Дупка</option>';
+            NAME_BG_options_str  += '<option value="ЧАВКИТЕ 1">ЧАВКИТЕ 1</option>';
+            NAME_BG_options_str  += '<option value="ЧАВКИТЕ 2">ЧАВКИТЕ 2</option>';
+            NAME_BG_options_str  += '<option value="ЧАВКИТЕ 3">ЧАВКИТЕ 3</option>';
+            NAME_BG_options_str  += '<option value="ЧАТЪРЛЪКА (ХАЙДУШКАТА)">ЧАТЪРЛЪКА (ХАЙДУШКАТА)</option>';
+            NAME_BG_options_str  += '<option value="ЧЕРЕПЧЕТАТА (S13)">ЧЕРЕПЧЕТАТА (S13)</option>';
+            NAME_BG_options_str  += '<option value="ЧЕРНАТА ДУПКА">ЧЕРНАТА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ЧЕРНИ ВРЪХ">ЧЕРНИ ВРЪХ</option>';
+            NAME_BG_options_str  += '<option value="ЧЕТИРИДЕСЕТ КОРИТА">ЧЕТИРИДЕСЕТ КОРИТА</option>';
+            NAME_BG_options_str  += '<option value="ЧИЧОВА ДУПКА">ЧИЧОВА ДУПКА</option>';
+            NAME_BG_options_str  += '<option value="ЧУДНИТЕ МОСТОВЕ - ЕР КЮПРИЯ">ЧУДНИТЕ МОСТОВЕ - ЕР КЮПРИЯ</option>';
+            NAME_BG_options_str  += '<option value="Чавките">Чавките</option>';
+            NAME_BG_options_str  += '<option value="Чакъровец">Чакъровец</option>';
+            NAME_BG_options_str  += '<option value="Чамитова дупка">Чамитова дупка</option>';
+            NAME_BG_options_str  += '<option value="Чанча">Чанча</option>';
+            NAME_BG_options_str  += '<option value="Чардака">Чардака</option>';
+            NAME_BG_options_str  += '<option value="Чекльовска  пропаст">Чекльовска  пропаст</option>';
+            NAME_BG_options_str  += '<option value="Чемериката">Чемериката</option>';
+            NAME_BG_options_str  += '<option value="Червената дупка">Червената дупка</option>';
+            NAME_BG_options_str  += '<option value="Черешата">Черешата</option>';
+            NAME_BG_options_str  += '<option value="Черната пещера">Черната пещера</option>';
+            NAME_BG_options_str  += '<option value="Черни връх 2 Остриката">Черни връх 2 Остриката</option>';
+            NAME_BG_options_str  += '<option value="Черни връх Остриката">Черни връх Остриката</option>';
+            NAME_BG_options_str  += '<option value="Черните извори">Черните извори</option>';
+            NAME_BG_options_str  += '<option value="Черният извор">Черният извор</option>';
+            NAME_BG_options_str  += '<option value="Четриоката">Четриоката</option>';
+            NAME_BG_options_str  += '<option value="Чифте дупка">Чифте дупка</option>';
+            NAME_BG_options_str  += '<option value="Чичовци">Чичовци</option>';
+            NAME_BG_options_str  += '<option value="Чукара">Чукара</option>';
+            NAME_BG_options_str  += '<option value="Чуклата">Чуклата</option>';
+            NAME_BG_options_str  += '<option value="Чукура">Чукура</option>';
+            NAME_BG_options_str  += '<option value="Чучоляна">Чучоляна</option>';
+            NAME_BG_options_str  += '<option value="Чърналевица">Чърналевица</option>';
+            NAME_BG_options_str  += '<option value="Чьортеш">Чьортеш</option>';
+            NAME_BG_options_str  += '<option value="ШАМАНСКАТА">ШАМАНСКАТА</option>';
+            NAME_BG_options_str  += '<option value="ШАРАЛИЙСКА">ШАРАЛИЙСКА</option>';
+            NAME_BG_options_str  += '<option value="ШИПКАТА-30 А">ШИПКАТА-30 А</option>';
+            NAME_BG_options_str  += '<option value="ШОКЬОВЕЦ">ШОКЬОВЕЦ</option>';
+            NAME_BG_options_str  += '<option value="Шабан дупка">Шабан дупка</option>';
+            NAME_BG_options_str  += '<option value="Шаламбата">Шаламбата</option>';
+            NAME_BG_options_str  += '<option value="Шапатек">Шапатек</option>';
+            NAME_BG_options_str  += '<option value="Шареняшката  пропаст">Шареняшката  пропаст</option>';
+            NAME_BG_options_str  += '<option value="Шепран дупка">Шепран дупка</option>';
+            NAME_BG_options_str  += '<option value="Шестицата">Шестицата</option>';
+            NAME_BG_options_str  += '<option value="Шилигарника">Шилигарника</option>';
+            NAME_BG_options_str  += '<option value="Шипката">Шипката</option>';
+            NAME_BG_options_str  += '<option value="Шипката1">Шипката1</option>';
+            NAME_BG_options_str  += '<option value="Шипката2">Шипката2</option>';
+            NAME_BG_options_str  += '<option value="Широки валог">Широки валог</option>';
+            NAME_BG_options_str  += '<option value="Шишманица">Шишманица</option>';
+            NAME_BG_options_str  += '<option value="Шишманова пропаст - №217">Шишманова пропаст - №217</option>';
+            NAME_BG_options_str  += '<option value="Шишмановата дупка">Шишмановата дупка</option>';
+            NAME_BG_options_str  += '<option value="Шлиферите">Шлиферите</option>';
+            NAME_BG_options_str  += '<option value="Шпела Пършинг">Шпела Пършинг</option>';
+            NAME_BG_options_str  += '<option value="Щавел дупка">Щавел дупка</option>';
+            NAME_BG_options_str  += '<option value="Щура дупка">Щура дупка</option>';
+            NAME_BG_options_str  += '<option value="ЪГЛОВА ПЕЩЕРА 2">ЪГЛОВА ПЕЩЕРА 2</option>';
+            NAME_BG_options_str  += '<option value="Ъглова пещера 1">Ъглова пещера 1</option>';
+            NAME_BG_options_str  += '<option value="ЮЧ ПЕЩЕРА">ЮЧ ПЕЩЕРА</option>';
+            NAME_BG_options_str  += '<option value="Юбилейна">Юбилейна</option>';
+            NAME_BG_options_str  += '<option value="Юбилейна 74">Юбилейна 74</option>';
+            NAME_BG_options_str  += '<option value="ЯМАТА">ЯМАТА</option>';
+            NAME_BG_options_str  += '<option value="ЯМАТА В ДАШОВСКИ ЛЪК">ЯМАТА В ДАШОВСКИ ЛЪК</option>';
+            NAME_BG_options_str  += '<option value="ЯМАТА НА КЛОКОТИШ">ЯМАТА НА КЛОКОТИШ</option>';
+            NAME_BG_options_str  += '<option value="Яворец">Яворец</option>';
+            NAME_BG_options_str  += '<option value="Ягодинската">Ягодинската</option>';
+            NAME_BG_options_str  += '<option value="Язовска дупка">Язовска дупка</option>';
+            NAME_BG_options_str  += '<option value="Ямата">Ямата</option>';
+            NAME_BG_options_str  += '<option value="Ямата Горел">Ямата Горел</option>';
+            NAME_BG_options_str  += '<option value="Ямата в Белио валог">Ямата в Белио валог</option>';
+            NAME_BG_options_str  += '<option value="Ямата в Рогачева поляна">Ямата в Рогачева поляна</option>';
+            NAME_BG_options_str  += '<option value="Ямата в Средни вървища">Ямата в Средни вървища</option>';
+            NAME_BG_options_str  += '<option value="Ямата на Ботевите четници">Ямата на Ботевите четници</option>';
+            NAME_BG_options_str  += '<option value="Ямата на Вълчово кошарище">Ямата на Вълчово кошарище</option>';
+            NAME_BG_options_str  += '<option value="Ямата на Мечито">Ямата на Мечито</option>';
+            NAME_BG_options_str  += '<option value="Ямата на Чуката">Ямата на Чуката</option>';
+            NAME_BG_options_str  += '<option value="Ямата на стагата">Ямата на стагата</option>';
+            NAME_BG_options_str  += '<option value="Ямите">Ямите</option>';
+            NAME_BG_options_str  += '<option value="Ямката">Ямката</option>';
+            NAME_BG_options_str  += '<option value="Ямката2">Ямката2</option>';
+            NAME_BG_options_str  += '<option value="Ямките">Ямките</option>';
+            NAME_BG_options_str  += '<option value="Янкулова дупка">Янкулова дупка</option>';
+            NAME_BG_options_str  += '<option value="Янчов ледник">Янчов ледник</option>';
+            NAME_BG_options_str  += '<option value="Ясенски облик">Ясенски облик</option>';
+            NAME_BG_options_str  += '<option value="врах СЗ от местността Ливаде">врах СЗ от местността Ливаде</option>';
+            NAME_BG_options_str  += '<option value="губилище на “Извора”">губилище на “Извора”</option>';
+            NAME_BG_options_str  += '<option value="отвор под пещ "Пепелянката"">отвор под пещ "Пепелянката"</option>';
+            NAME_BG_options_str  += '<option value="проп във венеца">проп във венеца</option>';
+            NAME_BG_options_str  += '<option value="пропаст за разбиване">пропаст за разбиване</option>';
+            NAME_BG_options_str  += '<option value="№ 13">№ 13</option>';
+            NAME_BG_options_str  += '<option value="№ 7">№ 7</option>';
+            NAME_BG_options_str  += '<option value="№ 8">№ 8</option>';
+            NAME_BG_options_str  += '<option value="№6">№6</option>';
+            NAME_BG_options_str  += '<option value="2989">2989</option>';
+            NAME_BG_options_str  += '<option value="2992">2992</option>';
+            NAME_BG_options_str  += '<option value="2993">2993</option>';
+            NAME_BG_options_str  += '<option value="2994">2994</option>';
+            NAME_BG_options_str  += '<option value="2996">2996</option>';
+            NAME_BG_options_str  += '<option value="2997">2997</option>';
+            NAME_BG_options_str  += '<option value="4286">4286</option>';
+            NAME_BG_options_str  += '<option value="5316">5316</option>';
+            NAME_BG_options_str  += '<option value="5317">5317</option>';
+			
+            createSearchFilter(
+            "menu",
+            "sel_NAME_BG",
+            "Име на пещерата",
+            NAME_BG_options_str
+            );
+
+            var S_TYPE_options_str  = '<option value="Индикация за проверка">Индикация за проверка</option>';
+            S_TYPE_options_str  += '<option value="Индикация проверена безперспективна">Индикация проверена безперспективна</option>';
+            S_TYPE_options_str  += '<option value="Индикация проверена с перспективи">Индикация проверена с перспективи</option>';
+            S_TYPE_options_str  += '<option value="Пещера">Пещера</option>';
+            S_TYPE_options_str  += '<option value="Пещера в процес на проучване">Пещера в процес на проучване</option>';
+            S_TYPE_options_str  += '<option value="Пещера защитен обект">Пещера защитен обект</option>';
+            S_TYPE_options_str  += '<option value="Пещера не проучена">Пещера не проучена</option>';
+            S_TYPE_options_str  += '<option value="Пещера проучена">Пещера проучена</option>';
+            S_TYPE_options_str  += '<option value="Пропаст в процес на проучване">Пропаст в процес на проучване</option>';
+            S_TYPE_options_str  += '<option value="Пропаст защитен обект">Пропаст защитен обект</option>';
+            S_TYPE_options_str  += '<option value="Пропаст не проучена">Пропаст не проучена</option>';
+            S_TYPE_options_str  += '<option value="Пропаст проучена">Пропаст проучена</option>';
+            S_TYPE_options_str  += '<option value="Пропастна пещера в процес на проучване">Пропастна пещера в процес на проучване</option>';
+            S_TYPE_options_str  += '<option value="Пропастна пещера защитен обект">Пропастна пещера защитен обект</option>';
+            S_TYPE_options_str  += '<option value="Пропастна пещера проучена">Пропастна пещера проучена</option>';
+			
+            createSearchFilter(
+            "menu",
+            "sel_S_TYPE",
+            "Тип на пещерата",
+            S_TYPE_options_str
+            );
+
+            var CITI_BG_options_str  = '<option value="гр.Асеновград">гр.Асеновград</option>';
+            CITI_BG_options_str  += '<option value="гр.Банско">гр.Банско</option>';
+            CITI_BG_options_str  += '<option value="гр.Белослав">гр.Белослав</option>';
+            CITI_BG_options_str  += '<option value="гр.Берковица">гр.Берковица</option>';
+            CITI_BG_options_str  += '<option value="гр.Велико Търново">гр.Велико Търново</option>';
+            CITI_BG_options_str  += '<option value="гр.Враца">гр.Враца</option>';
+            CITI_BG_options_str  += '<option value="гр.Годеч">гр.Годеч</option>';
+            CITI_BG_options_str  += '<option value="гр.Девин">гр.Девин</option>';
+            CITI_BG_options_str  += '<option value="гр.Етрополе">гр.Етрополе</option>';
+            CITI_BG_options_str  += '<option value="гр.Ивайловград">гр.Ивайловград</option>';
+            CITI_BG_options_str  += '<option value="гр.Каспичан">гр.Каспичан</option>';
+            CITI_BG_options_str  += '<option value="гр.Котел">гр.Котел</option>';
+            CITI_BG_options_str  += '<option value="гр.Луковит">гр.Луковит</option>';
+            CITI_BG_options_str  += '<option value="гр.Пещера">гр.Пещера</option>';
+            CITI_BG_options_str  += '<option value="гр.Плевен">гр.Плевен</option>';
+            CITI_BG_options_str  += '<option value="гр.Приморско">гр.Приморско</option>';
+            CITI_BG_options_str  += '<option value="гр.Разлог">гр.Разлог</option>';
+            CITI_BG_options_str  += '<option value="гр.Ракитово">гр.Ракитово</option>';
+            CITI_BG_options_str  += '<option value="гр.Сеново">гр.Сеново</option>';
+            CITI_BG_options_str  += '<option value="гр.Сливен">гр.Сливен</option>';
+            CITI_BG_options_str  += '<option value="гр.Твърдица">гр.Твърдица</option>';
+            CITI_BG_options_str  += '<option value="гр.Тетевен">гр.Тетевен</option>';
+            CITI_BG_options_str  += '<option value="гр.Трън">гр.Трън</option>';
+            CITI_BG_options_str  += '<option value="гр.Червен бряг">гр.Червен бряг</option>';
+            CITI_BG_options_str  += '<option value="гр.Ябланица">гр.Ябланица</option>';
+            CITI_BG_options_str  += '<option value="кв.Кулата и Бистрец">кв.Кулата и Бистрец</option>';
+            CITI_BG_options_str  += '<option value="с.Арбанаси">с.Арбанаси</option>';
+            CITI_BG_options_str  += '<option value="с.Арковна">с.Арковна</option>';
+            CITI_BG_options_str  += '<option value="с.Балван">с.Балван</option>';
+            CITI_BG_options_str  += '<option value="с.Батулци">с.Батулци</option>';
+            CITI_BG_options_str  += '<option value="с.Бежаново">с.Бежаново</option>';
+            CITI_BG_options_str  += '<option value="с.Бели извор">с.Бели извор</option>';
+            CITI_BG_options_str  += '<option value="с.Белица">с.Белица</option>';
+            CITI_BG_options_str  += '<option value="с.Белополяне">с.Белополяне</option>';
+            CITI_BG_options_str  += '<option value="с.Беляковец">с.Беляковец</option>';
+            CITI_BG_options_str  += '<option value="с.Беренде извор">с.Беренде извор</option>';
+            CITI_BG_options_str  += '<option value="с.Бижовци">с.Бижовци</option>';
+            CITI_BG_options_str  += '<option value="с.Близнак">с.Близнак</option>';
+            CITI_BG_options_str  += '<option value="с.Бов">с.Бов</option>';
+            CITI_BG_options_str  += '<option value="с.Богьовци">с.Богьовци</option>';
+            CITI_BG_options_str  += '<option value="с.Бориково">с.Бориково</option>';
+            CITI_BG_options_str  += '<option value="с.Борима">с.Борима</option>';
+            CITI_BG_options_str  += '<option value="с.Борино">с.Борино</option>';
+            CITI_BG_options_str  += '<option value="с.Борущица">с.Борущица</option>';
+            CITI_BG_options_str  += '<option value="с.Боснек">с.Боснек</option>';
+            CITI_BG_options_str  += '<option value="с.Ботуня">с.Ботуня</option>';
+            CITI_BG_options_str  += '<option value="с.Бохот">с.Бохот</option>';
+            CITI_BG_options_str  += '<option value="с.Брезе">с.Брезе</option>';
+            CITI_BG_options_str  += '<option value="с.Брестница">с.Брестница</option>';
+            CITI_BG_options_str  += '<option value="с.Бръшлян">с.Бръшлян</option>';
+            CITI_BG_options_str  += '<option value="с.Букоровци">с.Букоровци</option>';
+            CITI_BG_options_str  += '<option value="с.Бучин проход">с.Бучин проход</option>';
+            CITI_BG_options_str  += '<option value="с.Бяла">с.Бяла</option>';
+            CITI_BG_options_str  += '<option value="с.Бяла вода">с.Бяла вода</option>';
+            CITI_BG_options_str  += '<option value="с.Бяла поляна">с.Бяла поляна</option>';
+            CITI_BG_options_str  += '<option value="с.Ветрен">с.Ветрен</option>';
+            CITI_BG_options_str  += '<option value="с.Вишовград">с.Вишовград</option>';
+            CITI_BG_options_str  += '<option value="с.Влахи">с.Влахи</option>';
+            CITI_BG_options_str  += '<option value="с.Вълче поле">с.Вълче поле</option>';
+            CITI_BG_options_str  += '<option value="с.Върбовка">с.Върбовка</option>';
+            CITI_BG_options_str  += '<option value="с.Габаре">с.Габаре</option>';
+            CITI_BG_options_str  += '<option value="с.Габарево">с.Габарево</option>';
+            CITI_BG_options_str  += '<option value="с.Гела">с.Гела</option>';
+            CITI_BG_options_str  += '<option value="с.Геша">с.Геша</option>';
+            CITI_BG_options_str  += '<option value="с.Гинци">с.Гинци</option>';
+            CITI_BG_options_str  += '<option value="с.Глогово">с.Глогово</option>';
+            CITI_BG_options_str  += '<option value="с.Гложене">с.Гложене</option>';
+            CITI_BG_options_str  += '<option value="с.Голак">с.Голак</option>';
+            CITI_BG_options_str  += '<option value="с.Голеш">с.Голеш</option>';
+            CITI_BG_options_str  += '<option value="с.Голешово">с.Голешово</option>';
+            CITI_BG_options_str  += '<option value="с.Голяма Брестница">с.Голяма Брестница</option>';
+            CITI_BG_options_str  += '<option value="с.Голяма Желязна">с.Голяма Желязна</option>';
+            CITI_BG_options_str  += '<option value="с.Горна Бела речка">с.Горна Бела речка</option>';
+            CITI_BG_options_str  += '<option value="с.Горна Глоговица">с.Горна Глоговица</option>';
+            CITI_BG_options_str  += '<option value="с.Горно Озирово">с.Горно Озирово</option>';
+            CITI_BG_options_str  += '<option value="с.Горно Черковище">с.Горно Черковище</option>';
+            CITI_BG_options_str  += '<option value="с.Горско Сливово">с.Горско Сливово</option>';
+            CITI_BG_options_str  += '<option value="с.Господинци">с.Господинци</option>';
+            CITI_BG_options_str  += '<option value="с.Градежница">с.Градежница</option>';
+            CITI_BG_options_str  += '<option value="с.Градец">с.Градец</option>';
+            CITI_BG_options_str  += '<option value="с.Гръблевци">с.Гръблевци</option>';
+            CITI_BG_options_str  += '<option value="с.Губеш">с.Губеш</option>';
+            CITI_BG_options_str  += '<option value="с.Губислав">с.Губислав</option>';
+            CITI_BG_options_str  += '<option value="с.Гьоврен">с.Гьоврен</option>';
+            CITI_BG_options_str  += '<option value="с.Деветаки">с.Деветаки</option>';
+            CITI_BG_options_str  += '<option value="с.Джурково">с.Джурково</option>';
+            CITI_BG_options_str  += '<option value="с.Добралък">с.Добралък</option>';
+            CITI_BG_options_str  += '<option value="с.Добростан">с.Добростан</option>';
+            CITI_BG_options_str  += '<option value="с.Долни Лом">с.Долни Лом</option>';
+            CITI_BG_options_str  += '<option value="с.Долно Озирово">с.Долно Озирово</option>';
+            CITI_BG_options_str  += '<option value="с.Долно Черковище">с.Долно Черковище</option>';
+            CITI_BG_options_str  += '<option value="с.Драганица">с.Драганица</option>';
+            CITI_BG_options_str  += '<option value="с.Драшан">с.Драшан</option>';
+            CITI_BG_options_str  += '<option value="с.Дреново">с.Дреново</option>';
+            CITI_BG_options_str  += '<option value="с.Дружево">с.Дружево</option>';
+            CITI_BG_options_str  += '<option value="с.Дряново">с.Дряново</option>';
+            CITI_BG_options_str  += '<option value="с.Евренозово">с.Евренозово</option>';
+            CITI_BG_options_str  += '<option value="с.Емен">с.Емен</option>';
+            CITI_BG_options_str  += '<option value="с.Желен">с.Желен</option>';
+            CITI_BG_options_str  += '<option value="с.Заноге">с.Заноге</option>';
+            CITI_BG_options_str  += '<option value="с.Заселе">с.Заселе</option>';
+            CITI_BG_options_str  += '<option value="с.Зверино">с.Зверино</option>';
+            CITI_BG_options_str  += '<option value="с.Згориград">с.Згориград</option>';
+            CITI_BG_options_str  += '<option value="с.Зимевица">с.Зимевица</option>';
+            CITI_BG_options_str  += '<option value="с.Златна Панега">с.Златна Панега</option>';
+            CITI_BG_options_str  += '<option value="с.Змейово">с.Змейово</option>';
+            CITI_BG_options_str  += '<option value="с.Извор">с.Извор</option>';
+            CITI_BG_options_str  += '<option value="с.Илинденци">с.Илинденци</option>';
+            CITI_BG_options_str  += '<option value="с.Искрец">с.Искрец</option>';
+            CITI_BG_options_str  += '<option value="с.Ичера">с.Ичера</option>';
+            CITI_BG_options_str  += '<option value="с.Каменна Рикса">с.Каменна Рикса</option>';
+            CITI_BG_options_str  += '<option value="с.Камено поле">с.Камено поле</option>';
+            CITI_BG_options_str  += '<option value="с.Карлуково">с.Карлуково</option>';
+            CITI_BG_options_str  += '<option value="с.Каспичан">с.Каспичан</option>';
+            CITI_BG_options_str  += '<option value="с.Кестен">с.Кестен</option>';
+            CITI_BG_options_str  += '<option value="с.Кипилово">с.Кипилово</option>';
+            CITI_BG_options_str  += '<option value="с.Комщица">с.Комщица</option>';
+            CITI_BG_options_str  += '<option value="с.Константиново">с.Константиново</option>';
+            CITI_BG_options_str  += '<option value="с.Копчелиите">с.Копчелиите</option>';
+            CITI_BG_options_str  += '<option value="с.Косово">с.Косово</option>';
+            CITI_BG_options_str  += '<option value="с.Кости">с.Кости</option>';
+            CITI_BG_options_str  += '<option value="с.Кочан">с.Кочан</option>';
+            CITI_BG_options_str  += '<option value="с.Кошница">с.Кошница</option>';
+            CITI_BG_options_str  += '<option value="с.Краводер">с.Краводер</option>';
+            CITI_BG_options_str  += '<option value="с.Кремене">с.Кремене</option>';
+            CITI_BG_options_str  += '<option value="с.Крушуна">с.Крушуна</option>';
+            CITI_BG_options_str  += '<option value="с.Кръстава">с.Кръстава</option>';
+            CITI_BG_options_str  += '<option value="с.Кунино">с.Кунино</option>';
+            CITI_BG_options_str  += '<option value="с.Кърпачево">с.Кърпачево</option>';
+            CITI_BG_options_str  += '<option value="с.Кюлевча">с.Кюлевча</option>';
+            CITI_BG_options_str  += '<option value="с.Лакатник">с.Лакатник</option>';
+            CITI_BG_options_str  += '<option value="с.Лесковдол">с.Лесковдол</option>';
+            CITI_BG_options_str  += '<option value="с.Лиляче">с.Лиляче</option>';
+            CITI_BG_options_str  += '<option value="с.Липница">с.Липница</option>';
+            CITI_BG_options_str  += '<option value="с.Логодаж">с.Логодаж</option>';
+            CITI_BG_options_str  += '<option value="с.Любино">с.Любино</option>';
+            CITI_BG_options_str  += '<option value="с.Лютаджик">с.Лютаджик</option>';
+            CITI_BG_options_str  += '<option value="с.Лютиброд">с.Лютиброд</option>';
+            CITI_BG_options_str  += '<option value="с.Мадара">с.Мадара</option>';
+            CITI_BG_options_str  += '<option value="с.Малки чифлик">с.Малки чифлик</option>';
+            CITI_BG_options_str  += '<option value="с.Марково">с.Марково</option>';
+            CITI_BG_options_str  += '<option value="с.Медвен">с.Медвен</option>';
+            CITI_BG_options_str  += '<option value="с.Мелница">с.Мелница</option>';
+            CITI_BG_options_str  += '<option value="с.Микре">с.Микре</option>';
+            CITI_BG_options_str  += '<option value="с.Миланово">с.Миланово</option>';
+            CITI_BG_options_str  += '<option value="с.Мичковци">с.Мичковци</option>';
+            CITI_BG_options_str  += '<option value="с.Могила">с.Могила</option>';
+            CITI_BG_options_str  += '<option value="с.Могилица">с.Могилица</option>';
+            CITI_BG_options_str  += '<option value="с.Мостово">с.Мостово</option>';
+            CITI_BG_options_str  += '<option value="с.Мракетинци">с.Мракетинци</option>';
+            CITI_BG_options_str  += '<option value="с.Мугла">с.Мугла</option>';
+            CITI_BG_options_str  += '<option value="с.Муселиево">с.Муселиево</option>';
+            CITI_BG_options_str  += '<option value="с.Мусина">с.Мусина</option>';
+            CITI_BG_options_str  += '<option value="с.Мусомища">с.Мусомища</option>';
+            CITI_BG_options_str  += '<option value="с.Ново село">с.Ново село</option>';
+            CITI_BG_options_str  += '<option value="с.Орехово">с.Орехово</option>';
+            CITI_BG_options_str  += '<option value="с.Орешари">с.Орешари</option>';
+            CITI_BG_options_str  += '<option value="с.Орешец">с.Орешец</option>';
+            CITI_BG_options_str  += '<option value="с.Осиково">с.Осиково</option>';
+            CITI_BG_options_str  += '<option value="с.Очиндол">с.Очиндол</option>';
+            CITI_BG_options_str  += '<option value="с.Паволче">с.Паволче</option>';
+            CITI_BG_options_str  += '<option value="с.Пайдушко">с.Пайдушко</option>';
+            CITI_BG_options_str  += '<option value="с.Парамун">с.Парамун</option>';
+            CITI_BG_options_str  += '<option value="с.Пепелина">с.Пепелина</option>';
+            CITI_BG_options_str  += '<option value="с.Петревене">с.Петревене</option>';
+            CITI_BG_options_str  += '<option value="с.Петрово">с.Петрово</option>';
+            CITI_BG_options_str  += '<option value="с.Плоски">с.Плоски</option>';
+            CITI_BG_options_str  += '<option value="с.Побит камък">с.Побит камък</option>';
+            CITI_BG_options_str  += '<option value="с.Полковник Серафимово">с.Полковник Серафимово</option>';
+            CITI_BG_options_str  += '<option value="с.Превала">с.Превала</option>';
+            CITI_BG_options_str  += '<option value="с.Пролаз">с.Пролаз</option>';
+            CITI_BG_options_str  += '<option value="с.Пудрия">с.Пудрия</option>';
+            CITI_BG_options_str  += '<option value="с.Пчелиново">с.Пчелиново</option>';
+            CITI_BG_options_str  += '<option value="с.Рабиша">с.Рабиша</option>';
+            CITI_BG_options_str  += '<option value="с.Равна">с.Равна</option>';
+            CITI_BG_options_str  += '<option value="с.Радовене">с.Радовене</option>';
+            CITI_BG_options_str  += '<option value="с.Радювене">с.Радювене</option>';
+            CITI_BG_options_str  += '<option value="с.Ракита">с.Ракита</option>';
+            CITI_BG_options_str  += '<option value="с.Раянци">с.Раянци</option>';
+            CITI_BG_options_str  += '<option value="с.Резово">с.Резово</option>';
+            CITI_BG_options_str  += '<option value="с.Реселец">с.Реселец</option>';
+            CITI_BG_options_str  += '<option value="с.Рибарица">с.Рибарица</option>';
+            CITI_BG_options_str  += '<option value="с.Рибново">с.Рибново</option>';
+            CITI_BG_options_str  += '<option value="с.Ропот">с.Ропот</option>';
+            CITI_BG_options_str  += '<option value="с.Румянцево">с.Румянцево</option>';
+            CITI_BG_options_str  += '<option value="с.Садовец">с.Садовец</option>';
+            CITI_BG_options_str  += '<option value="с.Самоводене">с.Самоводене</option>';
+            CITI_BG_options_str  += '<option value="с.Сатовча">с.Сатовча</option>';
+            CITI_BG_options_str  += '<option value="с.Славщица">с.Славщица</option>';
+            CITI_BG_options_str  += '<option value="с.Слащен">с.Слащен</option>';
+            CITI_BG_options_str  += '<option value="с.Смилян">с.Смилян</option>';
+            CITI_BG_options_str  += '<option value="с.Сопот">с.Сопот</option>';
+            CITI_BG_options_str  += '<option value="с.Твърдица">с.Твърдица</option>';
+            CITI_BG_options_str  += '<option value="с.Топчии">с.Топчии</option>';
+            CITI_BG_options_str  += '<option value="с.Трекляно">с.Трекляно</option>';
+            CITI_BG_options_str  += '<option value="с.Триград">с.Триград</option>';
+            CITI_BG_options_str  += '<option value="с.Турян">с.Турян</option>';
+            CITI_BG_options_str  += '<option value="с.Тюленово">с.Тюленово</option>';
+            CITI_BG_options_str  += '<option value="с.Устрем">с.Устрем</option>';
+            CITI_BG_options_str  += '<option value="с.Филиповци">с.Филиповци</option>';
+            CITI_BG_options_str  += '<option value="с.Христо Даново">с.Христо Даново</option>';
+            CITI_BG_options_str  += '<option value="с.Царева ливада">с.Царева ливада</option>';
+            CITI_BG_options_str  += '<option value="с.Царевец">с.Царевец</option>';
+            CITI_BG_options_str  += '<option value="с.Церово">с.Церово</option>';
+            CITI_BG_options_str  += '<option value="с.Чавдарци">с.Чавдарци</option>';
+            CITI_BG_options_str  += '<option value="с.Чала">с.Чала</option>';
+            CITI_BG_options_str  += '<option value="с.Челопек">с.Челопек</option>';
+            CITI_BG_options_str  += '<option value="с.Червен">с.Червен</option>';
+            CITI_BG_options_str  += '<option value="с.Черкаски">с.Черкаски</option>';
+            CITI_BG_options_str  += '<option value="с.Черни Осъм">с.Черни Осъм</option>';
+            CITI_BG_options_str  += '<option value="с.Чирен">с.Чирен</option>';
+            CITI_BG_options_str  += '<option value="с.Чуруково">с.Чуруково</option>';
+            CITI_BG_options_str  += '<option value="с.Шума">с.Шума</option>';
+            CITI_BG_options_str  += '<option value="с.Ъглен">с.Ъглен</option>';
+            CITI_BG_options_str  += '<option value="с.Ягодина">с.Ягодина</option>';
+
+
+            createSearchFilter(
+            "menu",
+            "sel_CITI_BG",
+            "Населено място",
+            CITI_BG_options_str
+            );
+
+        </script>        
+    </body>
+</html>
