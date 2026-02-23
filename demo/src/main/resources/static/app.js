@@ -57,12 +57,12 @@ searchInput.addEventListener("input", () => {
 const layersBtn = document.getElementById("layersBtn");
 const filterMenu = document.getElementById("filterMenu");
 
-function closeFilterMenu(){
+function closeFilterMenu() {
   filterMenu.classList.remove("show");
   filterMenu.setAttribute("aria-hidden", "true");
 }
 
-function toggleFilterMenu(){
+function toggleFilterMenu() {
   const isOpen = filterMenu.classList.toggle("show");
   filterMenu.setAttribute("aria-hidden", isOpen ? "false" : "true");
 }
@@ -74,11 +74,11 @@ layersBtn.addEventListener("click", (e) => {
 
 
 // --------------------
-// Toast
+// Toast (ONLY ONCE)
 // --------------------
 const toast = document.getElementById("toast");
 
-function showToast(message){
+function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
 
@@ -101,14 +101,14 @@ const reqEmail = document.getElementById("reqEmail");
 const reqText = document.getElementById("reqText");
 const requestStatus = document.getElementById("requestStatus");
 
-function openRequestModal(){
+function openRequestModal() {
   requestModal.classList.add("show");
   requestModal.setAttribute("aria-hidden", "false");
   requestStatus.textContent = "";
   setTimeout(() => reqName.focus(), 0);
 }
 
-function closeRequestModal(){
+function closeRequestModal() {
   requestModal.classList.remove("show");
   requestModal.setAttribute("aria-hidden", "true");
 }
@@ -121,22 +121,16 @@ openRequestModalBtn.addEventListener("click", (e) => {
 
 closeRequestModalBtn.addEventListener("click", closeRequestModal);
 
-// close on backdrop
 requestModal.addEventListener("click", (e) => {
   if (e.target && e.target.dataset && e.target.dataset.close === "true") {
     closeRequestModal();
   }
 });
 
-
-// --------------------
-// Toast
-// --------------------
-const toast = document.getElementById("toast");
-
-function showToast(message){
-  toast.textContent = message;
-  toast.classList.add("show");
+// ✅ This should be your Spring Boot endpoint:
+const REQUEST_API_URL = "/api/request"; 
+// If your frontend is NOT served by Spring Boot (Live Server), use:
+// const REQUEST_API_URL = "http://localhost:8080/api/request";
 
 requestForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -150,17 +144,42 @@ requestForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  requestStatus.textContent = "";
-  reqName.value = "";
-  reqEmail.value = "";
-  reqText.value = "";
+  if (!isValidEmail(email)) {
+    requestStatus.textContent = "Please enter a valid email.";
+    return;
+  }
 
-  showToast("Request sent successfully!");
+  requestStatus.textContent = "Sending...";
+
+  try {
+    const res = await fetch(REQUEST_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, request: requestText })
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.error("Request API failed:", res.status, errText);
+      requestStatus.textContent = "Failed to send. Please try again.";
+      return;
+    }
+
+    // Success: clear fields, keep modal open, show toast
+    requestStatus.textContent = "";
+    reqName.value = "";
+    reqEmail.value = "";
+    reqText.value = "";
+    showToast("Request sent successfully!");
+  } catch (err) {
+    console.error(err);
+    requestStatus.textContent = "Server not reachable. Is Spring Boot running?";
+  }
 });
 
 
 // --------------------
-// AUTH MODAL
+// AUTH MODAL (only works if authModal exists in HTML)
 // --------------------
 const loginBtn = document.getElementById("loginBtn");
 const authModal = document.getElementById("authModal");
@@ -183,110 +202,103 @@ const regEmail = document.getElementById("regEmail");
 const regPassword = document.getElementById("regPassword");
 const regPassword2 = document.getElementById("regPassword2");
 
-function openAuthModal(){
+function openAuthModal() {
   authModal.classList.add("show");
-  authModal.setAttribute("aria-hidden","false");
+  authModal.setAttribute("aria-hidden", "false");
 }
 
-function closeAuth(){
+function closeAuth() {
   authModal.classList.remove("show");
-  authModal.setAttribute("aria-hidden","true");
+  authModal.setAttribute("aria-hidden", "true");
 }
 
-loginBtn.addEventListener("click",(e)=>{
-  e.stopPropagation();
-  closeFilterMenu();
-  openAuthModal();
-});
+// If you haven't added the auth modal HTML yet, these elements will be null.
+// This guard prevents crashes:
+if (loginBtn && authModal) {
+  loginBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeFilterMenu();
+    openAuthModal();
+  });
 
-closeAuthModal.addEventListener("click",closeAuth);
+  closeAuthModal?.addEventListener("click", closeAuth);
 
-// click outside
-authModal.addEventListener("click",(e)=>{
-  if(e.target.dataset.authClose === "true") closeAuth();
-});
+  authModal.addEventListener("click", (e) => {
+    if (e.target?.dataset?.authClose === "true") closeAuth();
+  });
 
-// tab switching
-loginTab.addEventListener("click",()=>{
-  loginTab.classList.add("active");
-  registerTab.classList.remove("active");
-  loginForm.classList.remove("hidden");
-  registerForm.classList.add("hidden");
-});
+  loginTab?.addEventListener("click", () => {
+    loginTab.classList.add("active");
+    registerTab.classList.remove("active");
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+  });
 
-registerTab.addEventListener("click",()=>{
-  registerTab.classList.add("active");
-  loginTab.classList.remove("active");
-  registerForm.classList.remove("hidden");
-  loginForm.classList.add("hidden");
-});
+  registerTab?.addEventListener("click", () => {
+    registerTab.classList.add("active");
+    loginTab.classList.remove("active");
+    registerForm.classList.remove("hidden");
+    loginForm.classList.add("hidden");
+  });
 
-// fake submit for now
-loginForm.addEventListener("submit",(e)=>{
-  e.preventDefault();
+  loginForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  loginStatus.textContent = "";
+    loginStatus.textContent = "";
 
-  const email = loginEmail.value.trim();
-  const password = loginPassword.value.trim();
+    const email = loginEmail.value.trim();
+    const password = loginPassword.value.trim();
 
-  if(!email || !password){
-    loginStatus.textContent = "Please fill all fields.";
-    return;
-  }
+    if (!email || !password) {
+      loginStatus.textContent = "Please fill all fields.";
+      return;
+    }
+    if (!isValidEmail(email)) {
+      loginStatus.textContent = "Please enter a valid email.";
+      return;
+    }
+    if (password.length < 6) {
+      loginStatus.textContent = "Password must be at least 6 characters.";
+      return;
+    }
 
-  if(!isValidEmail(email)){
-    loginStatus.textContent = "Please enter a valid email.";
-    return;
-  }
+    showToast("Logged in successfully! (demo)");
+  });
 
-  if(password.length < 6){
-    loginStatus.textContent = "Password must be at least 6 characters.";
-    return;
-  }
+  registerForm?.addEventListener("submit", (e) => {
+    e.preventDefault();
 
-  // success demo
-  showToast("Logged in successfully!");
-});
+    registerStatus.textContent = "";
 
-registerForm.addEventListener("submit",(e)=>{
-  e.preventDefault();
+    const name = regName.value.trim();
+    const email = regEmail.value.trim();
+    const pass1 = regPassword.value.trim();
+    const pass2 = regPassword2.value.trim();
 
-  registerStatus.textContent = "";
+    if (!name || !email || !pass1 || !pass2) {
+      registerStatus.textContent = "Please complete all fields.";
+      return;
+    }
+    if (name.length < 2) {
+      registerStatus.textContent = "Name is too short.";
+      return;
+    }
+    if (!isValidEmail(email)) {
+      registerStatus.textContent = "Invalid email address.";
+      return;
+    }
+    if (pass1.length < 6) {
+      registerStatus.textContent = "Password must be at least 6 characters.";
+      return;
+    }
+    if (pass1 !== pass2) {
+      registerStatus.textContent = "Passwords do not match.";
+      return;
+    }
 
-  const name = regName.value.trim();
-  const email = regEmail.value.trim();
-  const pass1 = regPassword.value.trim();
-  const pass2 = regPassword2.value.trim();
-
-  if(!name || !email || !pass1 || !pass2){
-    registerStatus.textContent = "Please complete all fields.";
-    return;
-  }
-
-  if(name.length < 2){
-    registerStatus.textContent = "Name is too short.";
-    return;
-  }
-
-  if(!isValidEmail(email)){
-    registerStatus.textContent = "Invalid email address.";
-    return;
-  }
-
-  if(pass1.length < 6){
-    registerStatus.textContent = "Password must be at least 6 characters.";
-    return;
-  }
-
-  if(pass1 !== pass2){
-    registerStatus.textContent = "Passwords do not match.";
-    return;
-  }
-
-  // success demo
-  showToast("Account created successfully!");
-});
+    showToast("Account created successfully! (demo)");
+  });
+}
 
 
 // --------------------
@@ -305,7 +317,7 @@ document.addEventListener("keydown", (e) => {
     closeFilterMenu();
     filterPanel.classList.remove("show");
     closeRequestModal();
-    closeAuth();
+    if (authModal?.classList.contains("show")) closeAuth();
   }
 });
 
@@ -313,7 +325,7 @@ document.addEventListener("keydown", (e) => {
 // --------------------
 // Helpers
 // --------------------
-function escapeHtml(str){
+function escapeHtml(str) {
   return str.replace(/[&<>"']/g, (m) => ({
     "&":"&amp;",
     "<":"&lt;",
@@ -323,6 +335,6 @@ function escapeHtml(str){
   }[m]));
 }
 
-  function isValidEmail(email){
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  }
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
