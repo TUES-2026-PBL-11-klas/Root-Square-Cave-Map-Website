@@ -74,6 +74,21 @@ layersBtn.addEventListener("click", (e) => {
 
 
 // --------------------
+// Toast
+// --------------------
+const toast = document.getElementById("toast");
+
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
+
+// --------------------
 // Request Modal
 // --------------------
 const openRequestModalBtn = document.getElementById("openRequestModal");
@@ -123,19 +138,14 @@ function showToast(message){
   toast.textContent = message;
   toast.classList.add("show");
 
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2500);
-}
-
-requestForm.addEventListener("submit", (e) => {
+requestForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const name = reqName.value.trim();
   const email = reqEmail.value.trim();
-  const text = reqText.value.trim();
+  const requestText = reqText.value.trim();
 
-  if (!name || !email || !text) {
+  if (!name || !email || !requestText) {
     requestStatus.textContent = "Please fill Name, Email, and Request.";
     return;
   }
