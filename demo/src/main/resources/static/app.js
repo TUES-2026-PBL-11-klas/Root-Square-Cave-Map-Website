@@ -17,7 +17,7 @@ document.getElementById("zoomOut").addEventListener("click", () => {
 
 
 // --------------------
-// Bottom-right filters panel toggle
+// Bottom-right filter panel toggle
 // --------------------
 const filterToggleBtn = document.getElementById("filterToggleBtn");
 const filterPanel = document.getElementById("filterPanel");
@@ -26,6 +26,7 @@ filterToggleBtn.addEventListener("click", (e) => {
   e.stopPropagation();
   filterPanel.classList.toggle("show");
 });
+
 
 // --------------------
 // Search (mock behavior)
@@ -73,6 +74,21 @@ layersBtn.addEventListener("click", (e) => {
 
 
 // --------------------
+// Toast
+// --------------------
+const toast = document.getElementById("toast");
+
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2500);
+}
+
+
+// --------------------
 // Request Modal
 // --------------------
 const openRequestModalBtn = document.getElementById("openRequestModal");
@@ -89,7 +105,6 @@ function openRequestModal(){
   requestModal.classList.add("show");
   requestModal.setAttribute("aria-hidden", "false");
   requestStatus.textContent = "";
-  // focus first field
   setTimeout(() => reqName.focus(), 0);
 }
 
@@ -113,45 +128,63 @@ requestModal.addEventListener("click", (e) => {
   }
 });
 
-const toast = document.getElementById("toast");
+// ⭐ UPDATE THIS: send to Spring Boot instead of fake success
+// If your backend is on a different port, change it here:
+const REQUEST_API_URL = "http://localhost:8080/api/request";
 
-function showToast(message){
-  toast.textContent = message;
-  toast.classList.add("show");
-
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2500);
-}
-
-requestForm.addEventListener("submit", (e) => {
+requestForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const name = reqName.value.trim();
   const email = reqEmail.value.trim();
-  const text = reqText.value.trim();
+  const requestText = reqText.value.trim();
 
-  if (!name || !email || !text) {
+  if (!name || !email || !requestText) {
     requestStatus.textContent = "Please fill Name, Email, and Request.";
     return;
   }
 
-  // success behavior
-  requestStatus.textContent = "";
-  reqName.value = "";
-  reqEmail.value = "";
-  reqText.value = "";
+  requestStatus.textContent = "Sending...";
 
-  // show green confirmation bar
-  showToast("Request sent successfully!");
+  try {
+    const res = await fetch(REQUEST_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        email,
+        request: requestText
+      })
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text().catch(() => "");
+      console.error("Request failed:", res.status, errorBody);
+      requestStatus.textContent = "Failed to send. Please try again.";
+      return;
+    }
+
+    // success: clear + toast, keep popup open
+    requestStatus.textContent = "";
+    reqName.value = "";
+    reqEmail.value = "";
+    reqText.value = "";
+    showToast("Request sent successfully!");
+  } catch (err) {
+    console.error(err);
+    requestStatus.textContent = "Server not reachable (is Spring Boot running?).";
+  }
 });
 
-// --------------------
-// Placeholder buttons
-// --------------------
 
-document.getElementById("authBtn").addEventListener("click", () => {
-  alert("Login / Register clicked (wire to your auth flow).");
+// --------------------
+// Login / Register button (fix bug)
+// --------------------
+// You have loginBtn in HTML, not authBtn.
+const loginBtn = document.getElementById("loginBtn");
+loginBtn.addEventListener("click", () => {
+  // For now placeholder (until you add auth modal)
+  showToast("Login/Register popup coming next 🙂");
 });
 
 
