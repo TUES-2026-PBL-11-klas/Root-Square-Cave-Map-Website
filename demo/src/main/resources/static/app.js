@@ -121,16 +121,22 @@ openRequestModalBtn.addEventListener("click", (e) => {
 
 closeRequestModalBtn.addEventListener("click", closeRequestModal);
 
-// Close modal when clicking backdrop
+// close on backdrop
 requestModal.addEventListener("click", (e) => {
   if (e.target && e.target.dataset && e.target.dataset.close === "true") {
     closeRequestModal();
   }
 });
 
-// ⭐ UPDATE THIS: send to Spring Boot instead of fake success
-// If your backend is on a different port, change it here:
-const REQUEST_API_URL = "http://localhost:8080/api/request";
+
+// --------------------
+// Toast
+// --------------------
+const toast = document.getElementById("toast");
+
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add("show");
 
 requestForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -144,47 +150,142 @@ requestForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  requestStatus.textContent = "Sending...";
+  requestStatus.textContent = "";
+  reqName.value = "";
+  reqEmail.value = "";
+  reqText.value = "";
 
-  try {
-    const res = await fetch(REQUEST_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        email,
-        request: requestText
-      })
-    });
-
-    if (!res.ok) {
-      const errorBody = await res.text().catch(() => "");
-      console.error("Request failed:", res.status, errorBody);
-      requestStatus.textContent = "Failed to send. Please try again.";
-      return;
-    }
-
-    // success: clear + toast, keep popup open
-    requestStatus.textContent = "";
-    reqName.value = "";
-    reqEmail.value = "";
-    reqText.value = "";
-    showToast("Request sent successfully!");
-  } catch (err) {
-    console.error(err);
-    requestStatus.textContent = "Server not reachable (is Spring Boot running?).";
-  }
+  showToast("Request sent successfully!");
 });
 
 
 // --------------------
-// Login / Register button (fix bug)
+// AUTH MODAL
 // --------------------
-// You have loginBtn in HTML, not authBtn.
 const loginBtn = document.getElementById("loginBtn");
-loginBtn.addEventListener("click", () => {
-  // For now placeholder (until you add auth modal)
-  showToast("Login/Register popup coming next 🙂");
+const authModal = document.getElementById("authModal");
+const closeAuthModal = document.getElementById("closeAuthModal");
+
+const loginTab = document.getElementById("loginTab");
+const registerTab = document.getElementById("registerTab");
+
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+
+const loginStatus = document.getElementById("loginStatus");
+const registerStatus = document.getElementById("registerStatus");
+
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+
+const regName = document.getElementById("regName");
+const regEmail = document.getElementById("regEmail");
+const regPassword = document.getElementById("regPassword");
+const regPassword2 = document.getElementById("regPassword2");
+
+function openAuthModal(){
+  authModal.classList.add("show");
+  authModal.setAttribute("aria-hidden","false");
+}
+
+function closeAuth(){
+  authModal.classList.remove("show");
+  authModal.setAttribute("aria-hidden","true");
+}
+
+loginBtn.addEventListener("click",(e)=>{
+  e.stopPropagation();
+  closeFilterMenu();
+  openAuthModal();
+});
+
+closeAuthModal.addEventListener("click",closeAuth);
+
+// click outside
+authModal.addEventListener("click",(e)=>{
+  if(e.target.dataset.authClose === "true") closeAuth();
+});
+
+// tab switching
+loginTab.addEventListener("click",()=>{
+  loginTab.classList.add("active");
+  registerTab.classList.remove("active");
+  loginForm.classList.remove("hidden");
+  registerForm.classList.add("hidden");
+});
+
+registerTab.addEventListener("click",()=>{
+  registerTab.classList.add("active");
+  loginTab.classList.remove("active");
+  registerForm.classList.remove("hidden");
+  loginForm.classList.add("hidden");
+});
+
+// fake submit for now
+loginForm.addEventListener("submit",(e)=>{
+  e.preventDefault();
+
+  loginStatus.textContent = "";
+
+  const email = loginEmail.value.trim();
+  const password = loginPassword.value.trim();
+
+  if(!email || !password){
+    loginStatus.textContent = "Please fill all fields.";
+    return;
+  }
+
+  if(!isValidEmail(email)){
+    loginStatus.textContent = "Please enter a valid email.";
+    return;
+  }
+
+  if(password.length < 6){
+    loginStatus.textContent = "Password must be at least 6 characters.";
+    return;
+  }
+
+  // success demo
+  showToast("Logged in successfully!");
+});
+
+registerForm.addEventListener("submit",(e)=>{
+  e.preventDefault();
+
+  registerStatus.textContent = "";
+
+  const name = regName.value.trim();
+  const email = regEmail.value.trim();
+  const pass1 = regPassword.value.trim();
+  const pass2 = regPassword2.value.trim();
+
+  if(!name || !email || !pass1 || !pass2){
+    registerStatus.textContent = "Please complete all fields.";
+    return;
+  }
+
+  if(name.length < 2){
+    registerStatus.textContent = "Name is too short.";
+    return;
+  }
+
+  if(!isValidEmail(email)){
+    registerStatus.textContent = "Invalid email address.";
+    return;
+  }
+
+  if(pass1.length < 6){
+    registerStatus.textContent = "Password must be at least 6 characters.";
+    return;
+  }
+
+  if(pass1 !== pass2){
+    registerStatus.textContent = "Passwords do not match.";
+    return;
+  }
+
+  // success demo
+  showToast("Account created successfully!");
 });
 
 
@@ -204,6 +305,7 @@ document.addEventListener("keydown", (e) => {
     closeFilterMenu();
     filterPanel.classList.remove("show");
     closeRequestModal();
+    closeAuth();
   }
 });
 
@@ -220,3 +322,7 @@ function escapeHtml(str){
     "'":"&#039;"
   }[m]));
 }
+
+  function isValidEmail(email){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
