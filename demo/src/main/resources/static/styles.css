@@ -4,6 +4,7 @@
   --border: rgba(0,0,0,.15);
   --shadow: 0 10px 30px rgba(0,0,0,.12);
   --focus: 0 0 0 3px rgba(59,130,246,.25);
+  --ui-top: 130px;  /* adjust this number */
 }
 
 *{ box-sizing: border-box; }
@@ -27,31 +28,25 @@ body{
   overflow:hidden;
 }
 
-/* Map Area */
-#mapArea{
+/* Make the embedded map fill the whole frame */
+.frame iframe{
   position:absolute;
   inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
 }
 
-.map-placeholder{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#667085;
-  font-size:20px;
-}
-
-/* Top bar */
+/* Top bar (☰ button) */
 .topbar{
-  position:absolute;
-  top:12px;
-  left:12px;
-  right:12px;
+  position: fixed;   /* key change: takes it out of iframe stacking quirks */
+  top: 140px;        /* move it down more */
+  left: 12px;
+  right: 12px;
   display:flex;
-  pointer-events:none;
-  z-index: 5;
+  z-index: 99999;    /* always above */
+  pointer-events: auto;
 }
 
 .icon-btn{
@@ -64,6 +59,7 @@ body{
   box-shadow:var(--shadow);
   cursor:pointer;
   font-size:18px;
+  pointer-events:auto;
 }
 
 .icon-btn:focus{
@@ -71,123 +67,19 @@ body{
   box-shadow: var(--shadow), var(--focus);
 }
 
-/* Search panel */
-.search-panel{
-  position:absolute;
-  top:12px;
-  right:12px;
-  width:260px;
-  background:white;
-  border-radius:14px;
-  box-shadow:var(--shadow);
-  border:1px solid var(--border);
-  padding:10px;
-  z-index: 4;
-}
-
-.search-panel input{
-  width:100%;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid var(--border);
-}
-
-.search-panel input:focus{
-  outline:none;
-  box-shadow: var(--focus);
-}
-
-.search-results{
-  margin-top:8px;
-  font-size:14px;
-  color:var(--muted);
-}
-
-/* Bottom controls */
-.bottom-controls{
-  position:absolute;
-  bottom:14px;
-  left:14px;
-  right:14px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  z-index: 3;
-}
-
-.control-btn{
-  width:40px;
-  height:40px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:white;
-  box-shadow:var(--shadow);
-  font-size:18px;
-  cursor:pointer;
-}
-
-.scale{
-  padding:10px 14px;
-  background:white;
-  border-radius:12px;
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
-  margin-left:8px;
-}
-
-/* Filter button (bottom-right) */
-.filter-btn{
-  margin-left:auto;
-  width:46px;
-  height:46px;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:white;
-  box-shadow:var(--shadow);
-  cursor:pointer;
-}
-
-/* Legend panel */
-.filter-panel{
-  position:absolute;
-  right:14px;
-  bottom:70px;
-  width:200px;
-  background:white;
-  border-radius:14px;
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
-  padding:14px;
-  display:none;
-  z-index: 4;
-}
-
-.filter-panel.show{
-  display:block;
-}
-
-.filter-panel h4{
-  margin-top:0;
-}
-
-.filter-panel label{
-  display:block;
-  margin:6px 0;
-}
-
 /* Top-left menu */
 .filter-menu{
-  position:absolute;
-  top:64px;
-  left:12px;
-  width:320px;
-  background:white;
-  border-radius:14px;
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
-  padding:12px;
-  display:none;
-  z-index: 6;
+  position: fixed;
+  top: 196px;        /* topbar top (140) + ~56px */
+  left: 12px;
+  width: 320px;
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 12px;
+  display: none;
+  z-index: 99999;
 }
 
 .filter-menu.show{
@@ -229,6 +121,34 @@ body{
 .field-label{
   font-size:12px;
   color:var(--muted);
+}
+
+/* Filter panel (bottom-right) */
+.filter-panel{
+  position:absolute;
+  right:14px;
+  bottom:14px;
+  width:220px;
+  background:white;
+  border-radius:14px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  padding:14px;
+  display:none;
+  z-index: 20;
+}
+
+.filter-panel.show{
+  display:block;
+}
+
+.filter-panel h4{
+  margin:0 0 10px 0;
+}
+
+.filter-panel label{
+  display:block;
+  margin:6px 0;
 }
 
 /* -------- Modal -------- */
@@ -346,9 +266,7 @@ body{
   opacity: 1;
 }
 
-
 /* -------- AUTH MODAL -------- */
-
 .hidden{
   display:none;
 }
@@ -370,4 +288,67 @@ body{
 .auth-tab.active{
   background:white;
   border-bottom:2px solid #3b82f6;
+}
+
+/* Small screens */
+@media (max-width: 520px){
+  :root{ --ui-top: 72px; }
+
+  .filter-menu{
+    width: calc(100vw - 24px);
+  }
+
+  .filter-panel{
+    width: calc(100vw - 28px);
+    right: 14px;
+    left: 14px;
+  }
+}
+.frame iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  z-index: 1;        /* map layer */
+}
+
+
+/* --- HARD OVERRIDE: keep iframe behind and UI above --- */
+
+.frame iframe{
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  z-index: 0 !important;
+}
+
+.topbar{
+  position: fixed !important;
+  top: 130px !important;         /* move down more */
+  left: 6px !important;
+  right: 12px !important;
+  z-index: 2147483647 !important; /* max z-index */
+  pointer-events: auto !important;
+}
+
+#layersBtn{
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+}
+
+.filter-menu{
+  position: fixed !important;
+  top: 180px !important;         /* below the button */
+  left: 6px !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+
+.frame{
+  position: relative !important;
+  z-index: 1 !important;
 }
