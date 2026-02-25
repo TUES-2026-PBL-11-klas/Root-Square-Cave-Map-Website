@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   caves-db:
-    image: postgres:18
+    image: postgres:15
     container_name: caves-db
     environment:
       POSTGRES_DB: caves
