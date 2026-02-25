@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: caves-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: caves
+  template:
+    metadata:
+      labels:
+        app: caves
+    spec:
+      containers:
+        - name: caves-container
+          image: viktorsirakov08/caves-app:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"

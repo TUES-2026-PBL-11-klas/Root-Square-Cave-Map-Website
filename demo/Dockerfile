@@ -8,6 +8,7 @@ COPY src ./src
 
 RUN mvn clean package -DskipTests
 
+# Run stage
 FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
