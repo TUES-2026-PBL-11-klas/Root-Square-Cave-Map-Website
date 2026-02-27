@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Speleofinder - All Caves, Right Here</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="icon-btn" id="layersBtn" title="Menu">☰</button>
+  </div>
+
+  <!-- TOP-LEFT MENU -->
+  <div class="filter-menu" id="filterMenu" aria-hidden="true">
+    <div class="filter-menu__header">
+      <div class="filter-menu__title">Menu</div>
+    </div>
+
+    <div class="filter-menu__section">
+      <!-- loginBtn will show the user's email and act as logout -->
+      <button class="primary-action" id="loginBtn">Account</button>
+      <button class="secondary-action" id="openRequestModal">Send Request</button>
+    </div>
+  </div>
+
+  <div class="frame">
+    <iframe
+        src="qgis_leaflet/index.html"
+        width="100%"
+        height="100%"
+        style="border:none;">
+    </iframe>
+
+    <!-- REQUEST MODAL -->
+    <div class="modal" id="requestModal" aria-hidden="true">
+      <div class="modal__backdrop" data-close="true"></div>
+
+      <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="requestModalTitle">
+        <div class="modal__header">
+          <div class="modal__title" id="requestModalTitle">Send Request</div>
+          <button class="icon-btn modal__close" id="closeRequestModal" title="Close">✕</button>
+        </div>
+
+        <form class="modal__body" id="requestForm">
+          <label class="field-label" for="reqName">Name</label>
+          <input id="reqName" type="text" placeholder="Your name" autocomplete="name" />
+
+          <label class="field-label" for="reqEmail">Email</label>
+          <input id="reqEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+
+          <label class="field-label" for="reqText">Request</label>
+          <textarea id="reqText" placeholder="Describe your request..."></textarea>
+
+          <div class="modal__footer">
+            <div class="modal__status" id="requestStatus"></div>
+            <button type="submit" class="primary-action modal__send" id="sendRequestBtn">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUCCESS TOAST -->
+  <div class="toast" id="toast">
+    Request sent successfully!
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

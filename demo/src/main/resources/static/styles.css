@@ -1,0 +1,354 @@
+:root{
+  --ink: #1f2937;
+  --muted: #6b7280;
+  --border: rgba(0,0,0,.15);
+  --shadow: 0 10px 30px rgba(0,0,0,.12);
+  --focus: 0 0 0 3px rgba(59,130,246,.25);
+  --ui-top: 130px;  /* adjust this number */
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  height: 100%;
+}
+
+body{
+  margin:0;
+  font-family: system-ui, Segoe UI, Arial, sans-serif;
+  background:#eef2f7;
+}
+
+/* Fullscreen container */
+.frame{
+  width: 100vw;
+  height: 100vh;
+  background:#dfe6ee;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Make the embedded map fill the whole frame */
+.frame iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* Top bar (☰ button) */
+.topbar{
+  position: fixed;   /* key change: takes it out of iframe stacking quirks */
+  top: 140px;        /* move it down more */
+  left: 12px;
+  right: 12px;
+  display:flex;
+  z-index: 99999;    /* always above */
+  pointer-events: auto;
+}
+
+.icon-btn{
+  pointer-events:auto;
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:white;
+  box-shadow:var(--shadow);
+  cursor:pointer;
+  font-size:18px;
+  pointer-events:auto;
+}
+
+.icon-btn:focus{
+  outline:none;
+  box-shadow: var(--shadow), var(--focus);
+}
+
+/* Top-left menu */
+.filter-menu{
+  position: fixed;
+  top: 196px;        /* topbar top (140) + ~56px */
+  left: 12px;
+  width: 320px;
+  background: white;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 12px;
+  display: none;
+  z-index: 99999;
+}
+
+.filter-menu.show{
+  display:block;
+}
+
+.filter-menu__header{
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+
+.filter-menu__title{
+  font-weight:600;
+}
+
+.filter-menu__section{
+  padding-top:12px;
+  display:grid;
+  gap:10px;
+}
+
+.primary-action,
+.secondary-action{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  cursor:pointer;
+  font-weight:600;
+}
+
+.primary-action:hover,
+.secondary-action:hover{
+  transform: translateY(-1px);
+}
+
+.field-label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Filter panel (bottom-right) */
+.filter-panel{
+  position:absolute;
+  right:14px;
+  bottom:14px;
+  width:220px;
+  background:white;
+  border-radius:14px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  padding:14px;
+  display:none;
+  z-index: 20;
+}
+
+.filter-panel.show{
+  display:block;
+}
+
+.filter-panel h4{
+  margin:0 0 10px 0;
+}
+
+.filter-panel label{
+  display:block;
+  margin:6px 0;
+}
+
+/* -------- Modal -------- */
+.modal{
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 50;
+}
+
+.modal.show{
+  display: block;
+}
+
+.modal__backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.35);
+}
+
+.modal__dialog{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - 28px));
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.modal__header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 14px 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.modal__title{
+  font-weight: 700;
+}
+
+.modal__close{
+  width: 40px;
+  height: 40px;
+}
+
+.modal__body{
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.modal__body input,
+.modal__body textarea{
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 10px 10px;
+  font: inherit;
+}
+
+.modal__body input:focus,
+.modal__body textarea:focus{
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.modal__body textarea{
+  min-height: 140px;
+  resize: vertical;
+}
+
+.modal__footer{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.modal__status{
+  flex: 1;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal__send{
+  width: auto;
+  padding: 10px 14px;
+}
+
+/* ---------- Toast Notification ---------- */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%) translateY(120px);
+  background: #22c55e;
+  color: white;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 12px 30px rgba(0,0,0,.25);
+  z-index: 100;
+  opacity: 0;
+  transition: all .35s ease;
+}
+
+.toast.show{
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+/* -------- AUTH MODAL -------- */
+.hidden{
+  display:none;
+}
+
+.auth-tabs{
+  display:flex;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+
+.auth-tab{
+  flex:1;
+  padding:12px;
+  border:none;
+  background:#f3f4f6;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.auth-tab.active{
+  background:white;
+  border-bottom:2px solid #3b82f6;
+}
+
+/* Small screens */
+@media (max-width: 520px){
+  :root{ --ui-top: 72px; }
+
+  .filter-menu{
+    width: calc(100vw - 24px);
+  }
+
+  .filter-panel{
+    width: calc(100vw - 28px);
+    right: 14px;
+    left: 14px;
+  }
+}
+.frame iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  z-index: 1;        /* map layer */
+}
+
+
+/* --- HARD OVERRIDE: keep iframe behind and UI above --- */
+
+.frame iframe{
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  z-index: 0 !important;
+}
+
+.topbar{
+  position: fixed !important;
+  top: 130px !important;         /* move down more */
+  left: 6px !important;
+  right: 12px !important;
+  z-index: 2147483647 !important; /* max z-index */
+  pointer-events: auto !important;
+}
+
+#layersBtn{
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+}
+
+.filter-menu{
+  position: fixed !important;
+  top: 180px !important;         /* below the button */
+  left: 6px !important;
+  z-index: 2147483647 !important;
+  pointer-events: auto !important;
+}
+
+.frame{
+  position: relative !important;
+  z-index: 1 !important;
+}

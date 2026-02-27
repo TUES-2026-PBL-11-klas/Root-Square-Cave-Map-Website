@@ -1,0 +1,13 @@
+.filterselect {
+        margin: 10px 0;
+    }
+    .filterlabel {
+        cursor: pointer;
+        color: #007acc;
+        margin-top: 4px;
+        font-size: 12px;
+    }
+    input {
+        width: 200px;
+        padding: 4px;
+    }

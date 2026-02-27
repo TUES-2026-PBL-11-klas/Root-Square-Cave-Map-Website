@@ -1,0 +1,27 @@
+services:
+  caves-db:
+    image: postgres:15
+    container_name: caves-db
+    environment:
+      POSTGRES_DB: caves
+      POSTGRES_USER: caves
+      POSTGRES_PASSWORD: caves
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  caves-app:
+    build: .
+    container_name: caves-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - caves-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://caves-db:5432/caves
+      SPRING_DATASOURCE_USERNAME: caves
+      SPRING_DATASOURCE_PASSWORD: caves
+
+volumes:
+  postgres_data:
