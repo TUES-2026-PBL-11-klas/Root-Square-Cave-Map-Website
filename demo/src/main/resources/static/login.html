@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Speleofinder — Sign In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --stone:   #f5ede0;
+      --deep:    #faf7f3;
+      --amber:   #b07428;
+      --amber-l: #c8893a;
+      --cream:   #3d2e1a;
+      --muted:   #9b8878;
+      --border:  rgba(176,116,40,0.2);
+      --err:     #c0392b;
+      --ok:      #27ae60;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--deep);
+      color: var(--cream);
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      overflow: hidden;
+    }
+
+    /* ── Atmospheric background ── */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(200,137,58,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(200,137,58,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #faf7f3 0%, #f0e8d8 100%);
+    }
+
+    /* Cave texture overlay */
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    /* ── Stalactite decorations ── */
+    .stalactites {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-around;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .stalactite {
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(176,116,40,0.25), transparent);
+      transform-origin: top;
+      animation: drip 8s ease-in-out infinite;
+    }
+
+    @keyframes drip {
+      0%, 100% { transform: scaleY(1); opacity: 0.4; }
+      50% { transform: scaleY(1.05); opacity: 0.7; }
+    }
+
+    /* ── Layout ── */
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255,252,248,0.92);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 48px 40px 40px;
+      backdrop-filter: blur(12px);
+      box-shadow:
+        0 0 0 1px rgba(176,116,40,0.06),
+        0 8px 40px rgba(100,70,30,0.12),
+        0 0 60px rgba(200,137,58,0.02) inset;
+      animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Header ── */
+    .logo {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .logo-icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 10px;
+      filter: sepia(1) saturate(2) hue-rotate(15deg);
+    }
+
+    .logo-title {
+      font-family: 'Cinzel', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: var(--amber);
+      text-transform: uppercase;
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 12px 8px;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--amber);
+      transform: scaleX(0);
+      transition: transform 0.25s ease;
+    }
+
+    .tab.active {
+      color: var(--amber);
+    }
+
+    .tab.active::after {
+      transform: scaleX(1);
+    }
+
+    /* ── Forms ── */
+    .form { display: none; }
+    .form.active { display: block; animation: fadeIn 0.25s ease; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(6px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .field input {
+      width: 100%;
+      background: rgba(0,0,0,0.03);
+      border: 1px solid rgba(176,116,40,0.25);
+      border-radius: 2px;
+      padding: 11px 14px;
+      color: var(--cream);
+      font-family: 'Lato', sans-serif;
+      font-size: 14px;
+      font-weight: 300;
+      transition: border-color 0.2s, background 0.2s;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--amber);
+      background: rgba(176,116,40,0.05);
+    }
+
+    .field input::placeholder {
+      color: rgba(120,100,80,0.5);
+    }
+
+    /* ── Submit button ── */
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--amber) 0%, #8a5520 100%);
+      border: none;
+      border-radius: 2px;
+      color: #fff;
+      font-family: 'Cinzel', serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 14px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s, transform 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit:hover { opacity: 0.92; transform: translateY(-1px); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Status messages ── */
+    .status {
+      min-height: 20px;
+      font-size: 12px;
+      margin-top: 14px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .status.error   { color: var(--err); }
+    .status.success { color: var(--ok); }
+    .status.info    { color: var(--muted); }
+
+    /* ── Pending notice ── */
+    .pending-notice {
+      display: none;
+      background: rgba(200,137,58,0.08);
+      border: 1px solid rgba(200,137,58,0.3);
+      border-radius: 2px;
+      padding: 16px;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .pending-notice.show { display: block; }
+
+    .pending-notice p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--amber-l);
+    }
+
+    .pending-notice strong {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0 18px;
+    }
+
+    .divider hr {
+      flex: 1;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .divider span {
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Stalactite heights ── */
+    .s1  { height: 60px; }  .s2  { height: 35px; } .s3  { height: 80px; }
+    .s4  { height: 45px; }  .s5  { height: 25px; } .s6  { height: 70px; }
+    .s7  { height: 50px; }  .s8  { height: 90px; } .s9  { height: 30px; }
+    .s10 { height: 65px; }  .s11 { height: 40px; } .s12 { height: 55px; }
+    .s1  { animation-delay: 0s; }    .s2  { animation-delay: 1s; }
+    .s3  { animation-delay: 2s; }    .s4  { animation-delay: 0.5s; }
+    .s5  { animation-delay: 3s; }    .s6  { animation-delay: 1.5s; }
+    .s7  { animation-delay: 2.5s; }  .s8  { animation-delay: 0.8s; }
+    .s9  { animation-delay: 3.5s; }  .s10 { animation-delay: 1.2s; }
+    .s11 { animation-delay: 4s; }    .s12 { animation-delay: 2.2s; }
+
+    @media (max-width: 480px) {
+      .card { padding: 36px 24px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<!-- Stalactites -->
+<div class="stalactites">
+  <div class="stalactite s1"></div>
+  <div class="stalactite s2"></div>
+  <div class="stalactite s3"></div>
+  <div class="stalactite s4"></div>
+  <div class="stalactite s5"></div>
+  <div class="stalactite s6"></div>
+  <div class="stalactite s7"></div>
+  <div class="stalactite s8"></div>
+  <div class="stalactite s9"></div>
+  <div class="stalactite s10"></div>
+  <div class="stalactite s11"></div>
+  <div class="stalactite s12"></div>
+</div>
+
+<div class="page">
+  <div class="card">
+
+    <div class="logo">
+      <span class="logo-icon">🕳️</span>
+      <div class="logo-title">Speleofinder</div>
+      <div class="logo-sub">Cave Exploration Registry</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tabLogin">Sign In</button>
+      <button class="tab" id="tabRegister">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form class="form active" id="loginForm" autocomplete="on" novalidate>
+      <div class="field">
+        <label for="loginEmail">Email Address</label>
+        <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" required />
+      </div>
+      <button class="btn-submit" type="submit" id="loginBtn">Enter the Cave</button>
+      <div class="status" id="loginStatus"></div>
+
+      <div class="pending-notice" id="pendingNotice">
+        <strong>⏳ Account Pending Approval</strong>
+        <p>Your account has been created and is awaiting activation by an administrator. You'll be able to access the map once approved.</p>
+      </div>
+    </form>
+
+    <!-- REGISTER FORM -->
+    <form class="form" id="registerForm" autocomplete="on" novalidate>
+      <div class="field">
+        <label for="regEmail">Email Address</label>
+        <input id="regEmail" type="email" placeholder="you@example.com" autocomplete="email" required />
+      </div>
+      <div class="field">
+        <label for="regPassword">Password</label>
+        <input id="regPassword" type="password" placeholder="Min 8 chars, upper, lower, digit" autocomplete="new-password" required />
+      </div>
+      <div class="field">
+        <label for="regPassword2">Confirm Password</label>
+        <input id="regPassword2" type="password" placeholder="Repeat password" autocomplete="new-password" required />
+      </div>
+      <button class="btn-submit" type="submit" id="registerBtn">Request Access</button>
+      <div class="status" id="registerStatus"></div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+  // ── Config ──
+  const IAM_URL = ""; // Change to your IAM service URL
+
+  // ── If already logged in and ACTIVE, skip to map ──
+  (function() {
+    const token = sessionStorage.getItem("jwt");
+    if (token) {
+      // Verify token is still valid by checking profile
+      fetch(`${IAM_URL}/auth/me`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      }).then(r => {
+        if (r.ok) window.location.href = "mainpage.html";
+      }).catch(() => {});
+    }
+  })();
+
+  // ── Elements ──
+  const tabLogin    = document.getElementById("tabLogin");
+  const tabRegister = document.getElementById("tabRegister");
+  const loginForm   = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+  const loginStatus  = document.getElementById("loginStatus");
+  const registerStatus = document.getElementById("registerStatus");
+  const pendingNotice  = document.getElementById("pendingNotice");
+
+  // ── Tabs ──
+  tabLogin.addEventListener("click", () => {
+    tabLogin.classList.add("active");
+    tabRegister.classList.remove("active");
+    loginForm.classList.add("active");
+    registerForm.classList.remove("active");
+    clearStatuses();
+  });
+
+  tabRegister.addEventListener("click", () => {
+    tabRegister.classList.add("active");
+    tabLogin.classList.remove("active");
+    registerForm.classList.add("active");
+    loginForm.classList.remove("active");
+    clearStatuses();
+  });
+
+  function clearStatuses() {
+    loginStatus.textContent = "";
+    loginStatus.className = "status";
+    registerStatus.textContent = "";
+    registerStatus.className = "status";
+    pendingNotice.classList.remove("show");
+  }
+
+  function setStatus(el, msg, type) {
+    el.textContent = msg;
+    el.className = `status ${type}`;
+  }
+
+  function setLoading(btn, loading) {
+    if (loading) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span>Please wait…`;
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = btn.dataset.label;
+    }
+  }
+
+  // Save original labels
+  document.getElementById("loginBtn").dataset.label    = "Enter the Cave";
+  document.getElementById("registerBtn").dataset.label = "Request Access";
+
+  function isValidEmail(e) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+  }
+
+  // ── LOGIN ──
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById("loginBtn");
+    const email = document.getElementById("loginEmail").value.trim();
+    const pass  = document.getElementById("loginPassword").value;
+
+    pendingNotice.classList.remove("show");
+
+    if (!email || !pass) {
+      setStatus(loginStatus, "Please fill in all fields.", "error"); return;
+    }
+    if (!isValidEmail(email)) {
+      setStatus(loginStatus, "Enter a valid email address.", "error"); return;
+    }
+
+    setLoading(btn, true);
+    setStatus(loginStatus, "Authenticating…", "info");
+
+    try {
+      const res = await fetch(`${IAM_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass })
+      });
+
+      const body = await res.text();
+
+      if (res.status === 403 || (body && body.toLowerCase().includes("pending"))) {
+        setStatus(loginStatus, "", "");
+        pendingNotice.classList.add("show");
+        setLoading(btn, false);
+        return;
+      }
+
+      if (res.status === 401 || !res.ok) {
+        const msg = body || "Invalid email or password.";
+        // Show pending notice for locked/pending accounts
+        if (msg.toLowerCase().includes("locked") || msg.toLowerCase().includes("pending")) {
+          setStatus(loginStatus, "", "");
+          pendingNotice.classList.add("show");
+        } else {
+          setStatus(loginStatus, msg.replace(/"/g, ''), "error");
+        }
+        setLoading(btn, false);
+        return;
+      }
+
+      const data = JSON.parse(body);
+      sessionStorage.setItem("jwt", data.accessToken);
+      setStatus(loginStatus, "Access granted. Entering…", "success");
+
+      setTimeout(() => {
+        window.location.href = "mainpage.html";
+      }, 600);
+
+    } catch (err) {
+      console.error(err);
+      setStatus(loginStatus, "Cannot reach server. Is it running?", "error");
+      setLoading(btn, false);
+    }
+  });
+
+  // ── REGISTER ──
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById("registerBtn");
+    const email = document.getElementById("regEmail").value.trim();
+    const pass1 = document.getElementById("regPassword").value;
+    const pass2 = document.getElementById("regPassword2").value;
+
+    if (!email || !pass1 || !pass2) {
+      setStatus(registerStatus, "Please fill in all fields.", "error"); return;
+    }
+    if (!isValidEmail(email)) {
+      setStatus(registerStatus, "Enter a valid email address.", "error"); return;
+    }
+    if (pass1.length < 8) {
+      setStatus(registerStatus, "Password must be at least 8 characters.", "error"); return;
+    }
+    if (!/(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])/.test(pass1)) {
+      setStatus(registerStatus, "Password must contain uppercase, lowercase, and a number.", "error"); return;
+    }
+    if (pass1 !== pass2) {
+      setStatus(registerStatus, "Passwords do not match.", "error"); return;
+    }
+
+    setLoading(btn, true);
+    setStatus(registerStatus, "Creating account…", "info");
+
+    try {
+    const res = await fetch(`${IAM_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass1 })
+    });
+
+    let msg = "";
+    const contentType = res.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+        const data = await res.json();
+        msg = data.message || data.error || JSON.stringify(data);
+    } else {
+        msg = await res.text();
+    }
+
+    msg = msg.replace(/"/g, '').trim();
+
+    if (!res.ok) {
+        setStatus(registerStatus, msg || "Registration failed.", "error");
+        setLoading(btn, false);
+        return;
+    }
+
+    // Success — account created but PENDING
+    setStatus(registerStatus, "✓ Account created! Awaiting admin approval before you can sign in.", "success");
+    document.getElementById("regEmail").value = "";
+    document.getElementById("regPassword").value = "";
+    document.getElementById("regPassword2").value = "";
+    setLoading(btn, false);
+
+    setTimeout(() => {
+        tabLogin.click();
+        setStatus(loginStatus, "Registration successful — please wait for admin activation.", "info");
+    }, 2500);
+
+    } catch (err) {
+        console.error(err);
+        setStatus(registerStatus, "Cannot reach server. Is it running?", "error");
+        setLoading(btn, false);
+    }
+  });
+</script>
+</body>
+</html>
