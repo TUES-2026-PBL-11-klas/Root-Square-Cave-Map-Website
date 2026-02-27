@@ -419,14 +419,14 @@
 
 <script>
   // ── Config ──
-  const IAM_URL = "http://localhost:8080"; // Change to your IAM service URL
+  const IAM_URL = ""; // Change to your IAM service URL
 
   // ── If already logged in and ACTIVE, skip to map ──
   (function() {
     const token = sessionStorage.getItem("jwt");
     if (token) {
       // Verify token is still valid by checking profile
-      fetch(`${IAM_URL}/api/users/me`, {
+      fetch(`${IAM_URL}/auth/me`, {
         headers: { "Authorization": `Bearer ${token}` }
       }).then(r => {
         if (r.ok) window.location.href = "mainpage.html";
@@ -511,7 +511,7 @@
     setStatus(loginStatus, "Authenticating…", "info");
 
     try {
-      const res = await fetch(`${IAM_URL}/api/auth/login`, {
+      const res = await fetch(`${IAM_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: pass })
@@ -582,7 +582,7 @@
     setStatus(registerStatus, "Creating account…", "info");
 
     try {
-    const res = await fetch(`${IAM_URL}/api/auth/register`, {
+    const res = await fetch(`${IAM_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: pass1 })
