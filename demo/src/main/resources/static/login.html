@@ -11,15 +11,15 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --stone:   #1a1714;
-      --deep:    #0f0d0b;
-      --amber:   #c8893a;
-      --amber-l: #e8a955;
-      --cream:   #f5ede0;
-      --muted:   #8a7d6e;
-      --border:  rgba(200,137,58,0.25);
-      --err:     #e05252;
-      --ok:      #5cb85c;
+      --stone:   #f5ede0;
+      --deep:    #faf7f3;
+      --amber:   #b07428;
+      --amber-l: #c8893a;
+      --cream:   #3d2e1a;
+      --muted:   #9b8878;
+      --border:  rgba(176,116,40,0.2);
+      --err:     #c0392b;
+      --ok:      #27ae60;
     }
 
     html, body {
@@ -37,9 +37,9 @@
       inset: 0;
       z-index: 0;
       background:
-        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(200,137,58,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(200,137,58,0.04) 0%, transparent 60%),
-        radial-gradient(ellipse 100% 100% at 50% 50%, #1a1714 0%, #0a0806 100%);
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(200,137,58,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 20%, rgba(200,137,58,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, #faf7f3 0%, #f0e8d8 100%);
     }
 
     /* Cave texture overlay */
@@ -48,7 +48,7 @@
       position: absolute;
       inset: 0;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: 0.5;
+      opacity: 0.3;
       pointer-events: none;
     }
 
@@ -66,7 +66,7 @@
 
     .stalactite {
       width: 2px;
-      background: linear-gradient(to bottom, rgba(200,137,58,0.3), transparent);
+      background: linear-gradient(to bottom, rgba(176,116,40,0.25), transparent);
       transform-origin: top;
       animation: drip 8s ease-in-out infinite;
     }
@@ -90,15 +90,15 @@
     .card {
       width: 100%;
       max-width: 420px;
-      background: rgba(26,23,20,0.9);
+      background: rgba(255,252,248,0.92);
       border: 1px solid var(--border);
       border-radius: 4px;
       padding: 48px 40px 40px;
       backdrop-filter: blur(12px);
       box-shadow:
-        0 0 0 1px rgba(200,137,58,0.08),
-        0 32px 80px rgba(0,0,0,0.8),
-        0 0 60px rgba(200,137,58,0.03) inset;
+        0 0 0 1px rgba(176,116,40,0.06),
+        0 8px 40px rgba(100,70,30,0.12),
+        0 0 60px rgba(200,137,58,0.02) inset;
       animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
@@ -204,8 +204,8 @@
 
     .field input {
       width: 100%;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(200,137,58,0.2);
+      background: rgba(0,0,0,0.03);
+      border: 1px solid rgba(176,116,40,0.25);
       border-radius: 2px;
       padding: 11px 14px;
       color: var(--cream);
@@ -218,20 +218,20 @@
 
     .field input:focus {
       border-color: var(--amber);
-      background: rgba(200,137,58,0.06);
+      background: rgba(176,116,40,0.05);
     }
 
     .field input::placeholder {
-      color: rgba(138,125,110,0.5);
+      color: rgba(120,100,80,0.5);
     }
 
     /* ── Submit button ── */
     .btn-submit {
       width: 100%;
-      background: linear-gradient(135deg, var(--amber) 0%, #b07030 100%);
+      background: linear-gradient(135deg, var(--amber) 0%, #8a5520 100%);
       border: none;
       border-radius: 2px;
-      color: var(--deep);
+      color: #fff;
       font-family: 'Cinzel', serif;
       font-size: 12px;
       font-weight: 700;
@@ -316,8 +316,8 @@
       display: inline-block;
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(15,13,11,0.3);
-      border-top-color: var(--deep);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       vertical-align: middle;
